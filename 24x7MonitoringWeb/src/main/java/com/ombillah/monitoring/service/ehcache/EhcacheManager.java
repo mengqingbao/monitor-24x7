@@ -21,6 +21,7 @@ public interface EhcacheManager {
 		
 	public List<MethodTracer> retrieveMethodStatistics(
 			String methodSignature,
+			List<String> searchedItems, 
 			Long minExecutionTime,
 			Long maxExecutionTime,
 			Date startDate,

@@ -1,5 +1,7 @@
 package com.ombillah.monitoring.domain;
 
+import java.util.List;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -10,6 +12,9 @@ public class TracingFilter extends BaseDomain {
 	private static final long serialVersionUID = 1L;
 	private Integer timeRangeInMins;
 	private Integer resolutionInSecs;
+	private String fromRange;
+	private String toRange;
+	private List<String> searchedItems;
 
 	public Integer getTimeRangeInMins() {
 		return timeRangeInMins;
@@ -25,6 +30,30 @@ public class TracingFilter extends BaseDomain {
 
 	public void setResolutionInSecs(Integer resolutionInSecs) {
 		this.resolutionInSecs = resolutionInSecs;
+	}
+
+	public String getFromRange() {
+		return fromRange;
+	}
+
+	public void setFromRange(String fromRange) {
+		this.fromRange = fromRange;
+	}
+
+	public String getToRange() {
+		return toRange;
+	}
+
+	public void setToRange(String toRange) {
+		this.toRange = toRange;
+	}
+
+	public List<String> getSearchedItems() {
+		return searchedItems;
+	}
+
+	public void setSearchedItems(List<String> searchedItems) {
+		this.searchedItems = searchedItems;
 	}
 
 	/**

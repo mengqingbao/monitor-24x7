@@ -7,9 +7,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.commons.lang.StringUtils;
 import org.quartz.JobBuilder;
@@ -49,7 +46,7 @@ public aspect MethodExecutionTimeAspect {
 				.startAt(cal.getTime())
 				.withSchedule(
 						SimpleScheduleBuilder.simpleSchedule()
-						.withIntervalInSeconds(30).repeatForever())
+						.withIntervalInSeconds(10).repeatForever())
 				.build();
 
 		Scheduler scheduler = new StdSchedulerFactory().getScheduler();
@@ -58,7 +55,6 @@ public aspect MethodExecutionTimeAspect {
 		
 	}
 
-	//pointcut publicOperation() : execution(public * com.ombillah.ecom4j.service..*(..)) || execution(public * java.util.concurrent.CopyOnWriteArrayList..*(..));
 	pointcut publicOperation() : execution(public * com.ombillah.ecom4j..*(..)) || execution(public * java.util.concurrent.CopyOnWriteArrayList..*(..));
 	Object around() : publicOperation() {
 
