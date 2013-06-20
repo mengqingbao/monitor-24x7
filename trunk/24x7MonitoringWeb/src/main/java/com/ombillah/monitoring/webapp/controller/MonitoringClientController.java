@@ -1,5 +1,6 @@
 package com.ombillah.monitoring.webapp.controller;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -10,10 +11,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math.stat.descriptive.moment.Mean;
 import org.springframework.stereotype.Controller;
@@ -38,7 +41,6 @@ import com.ombillah.monitoring.service.ehcache.EhcacheManager;
 @Controller
 public class MonitoringClientController {
 
-	private static final int DEFAULT_RESOLUTION = 30;
 	private static final int TWENTY_FOUR_HOURS_IN_MIN = 1440;
 	private static final int ONE_MINUTE = 60;
 	
@@ -65,11 +67,33 @@ public class MonitoringClientController {
 	@ResponseBody
 	public MethodTracers getMonitoringInformation(
 			@PathVariable("methodSignature") String methodSignature,
-			@RequestBody TracingFilter tracingFilter) {
+			@RequestBody TracingFilter tracingFilter) throws ParseException {
 		 
 		 SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-		 int timeRangeinMins = tracingFilter.getTimeRangeInMins();
-		 int resolutionInSec = tracingFilter.getResolutionInSecs();
+		 Integer timeRangeinMins = tracingFilter.getTimeRangeInMins();
+		 Integer resolutionInSec = tracingFilter.getResolutionInSecs();
+		 String fromRange = tracingFilter.getFromRange();
+		 String toRange = tracingFilter.getToRange();
+		 
+		 Date minDate;
+		 Date maxDate;
+		 
+		 if(StringUtils.isNotEmpty(fromRange)) {
+			 SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm aa");
+			 minDate = format.parse(fromRange);
+			 maxDate = format.parse(toRange);
+			 Long differenceinMs = maxDate.getTime() - minDate.getTime();
+			 timeRangeinMins = (int) TimeUnit.MILLISECONDS.toMinutes(differenceinMs);
+			 resolutionInSec = timeRangeinMins;
+		 } else {
+
+			 maxDate = new Date();
+			 Calendar cal = Calendar.getInstance();
+			 cal.setTime(maxDate);
+			 cal.add(Calendar.MINUTE, -1 * timeRangeinMins);
+			 minDate = cal.getTime();
+		 }
+		 
 		 
 		 if(timeRangeinMins > TWENTY_FOUR_HOURS_IN_MIN) {
 			 dateFormat = new SimpleDateFormat("MMM d HH:mm");
@@ -78,13 +102,9 @@ public class MonitoringClientController {
 			 dateFormat = new SimpleDateFormat("HH:mm");
 		 }
 
-		 Date maxDate = new Date();
-		 Calendar cal = Calendar.getInstance();
-		 cal.setTime(maxDate);
-		 cal.add(Calendar.MINUTE, -1 * timeRangeinMins);
-		 Date minDate = cal.getTime();
-		 
+		 List<String> searchedItems = tracingFilter.getSearchedItems();
 		 List<MethodTracer> tracersFromCache = cacheManager.retrieveMethodStatistics(methodSignature, 
+				 searchedItems,
 				 null, 
 				 null, 
 				 minDate, 
@@ -94,7 +114,7 @@ public class MonitoringClientController {
 		 List<MethodTracer> methodTracersGrouped = extractMethodTracersFromMap(map);
 		 
 		 Map<String, List<MethodTracer>> tracersByResolution = groupTracersByResolution(
-				dateFormat, resolutionInSec, maxDate, cal, minDate, tracers);
+				dateFormat, resolutionInSec, maxDate, minDate, tracers);
 		 
 		 MethodTracers result = new MethodTracers();
 		 result.setTracersGrouped(methodTracersGrouped);
@@ -104,11 +124,14 @@ public class MonitoringClientController {
 	}
 
 	private Map<String, List<MethodTracer>> groupTracersByResolution(
-			SimpleDateFormat dateFormat, int resolutionInSec, Date maxDate,
-			Calendar cal, Date minDate, List<MethodTracer> tracers) {
+			SimpleDateFormat dateFormat, 
+			int resolutionInSec, 
+			Date maxDate,
+		    Date minDate, 
+		    List<MethodTracer> tracers) {
 		 Map<String, List<MethodTracer>> tracersByResolution = new LinkedHashMap<String, List<MethodTracer>>();
 		 Date currentDate  = new Date(minDate.getTime());
-		 
+		 Calendar cal = Calendar.getInstance();
 		 while(currentDate.compareTo(maxDate) <=0 ) {
 			 cal.setTime(currentDate);
 			 cal.add(Calendar.SECOND, resolutionInSec);

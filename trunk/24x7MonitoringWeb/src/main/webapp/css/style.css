@@ -1,5 +1,37 @@
-html, body {
-    height: 100%
+html,body {
+	height: 100%
+}
+
+.floatR {
+	float: right;
+}
+
+.floatL {
+	float: left;
+}
+
+.marginR {
+	margin-right: 5px;
+}
+
+.marginL {
+	margin-left: 5px;
+}
+
+.marginT {
+	margin-top: 5px;
+}
+
+.marginB {
+	margin-bottom: 5px;
+}
+
+.margin {
+	margin: 5px;
+}
+
+.center {
+	text-align: center;
 }
 
 .ajax_box {
@@ -11,36 +43,40 @@ html, body {
 	z-index: 10000;
 	background-color: white;
 	opacity: 0.75;
-	filter: alpha(opacity =             75); /* for internet explorer */
+	filter: alpha(opacity =               75); /* for internet explorer */
 	opacity: 0.75; /* CSS3 standard */
 	-moz-opacity: 0.75; /* for older gecko browsers */
 	-khtml-opacity: 0.75; /* for older webkit browsers */
 }
 
-.main_table  {
-	width:100%;
-	height:600px
-	border: 1px solid #CCCCCC;
+.main_table {
+	width: 100%;
+	height: 600px border:  1px solid #CCCCCC;
 	padding: 8px;
 }
 
 .main_table td {
 	border-left: 1px solid #CCCCCC;
 	vertical-align: top;
-	
 }
 
 .tidy_table {
-	width:100%;
+	width: 100%;
 }
+
 .tidy_table td {
-	max-width:500px;
-	white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
-	white-space: -pre-wrap;      /* Opera 4-6 */
-	white-space: -o-pre-wrap;    /* Opera 7 */
-	white-space: pre-wrap;       /* css-3 */
-	word-wrap: break-word;       /* Internet Explorer 5.5+ */
+	max-width: 500px;
+	white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+	white-space: -pre-wrap; /* Opera 4-6 */
+	white-space: -o-pre-wrap; /* Opera 7 */
+	white-space: pre-wrap; /* css-3 */
+	word-wrap: break-word; /* Internet Explorer 5.5+ */
 	word-break: break-all;
-	white-space: normal;	
-	
+	white-space: normal;
+}
+
+
+.defaultTextActive {
+	color: #a1a1a1;
+	font-style: italic;
 }

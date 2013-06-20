@@ -7,14 +7,17 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.search.Attribute;
+import net.sf.ehcache.search.Query;
 import net.sf.ehcache.search.Result;
 import net.sf.ehcache.search.Results;
 import net.sf.ehcache.search.expression.Criteria;
+
 import javax.annotation.Resource;
 import com.ombillah.monitoring.domain.MethodTracer;
 import com.ombillah.monitoring.service.ehcache.EhcacheManager;
@@ -38,41 +41,50 @@ public class EhcacheManagerImpl implements EhcacheManager {
     }
 	
 	public List<MethodTracer> retrieveMethodStatistics(String methodSignature,
+			List<String> searchedItems,
 			Long minExecutionTime,
 			Long maxExecutionTime,
 			Date startDate,
 			Date endDate) {
 		
 		Cache cache = this.getCacheInstance(METHOD_TRACER_CACHE);
-
 		Attribute<String> methodName = cache.getSearchAttribute("methodName");
 		Attribute<Long> executionTime = cache.getSearchAttribute("average");
 		Attribute<Date> creationDate = cache.getSearchAttribute("creationDate");
 		
-		Criteria criteria = methodName.ilike(methodSignature + "*");
+		Query query = cache.createQuery();
+		if(!CollectionUtils.isEmpty(searchedItems)) {
+			Criteria criteria = methodName.ilike(methodSignature + "*");
+			for(String item : searchedItems) {
+				criteria.or(methodName.ilike(item + "*"));
+				query.addCriteria(criteria);
+			}
+		//	query.addCriteria(criteria);
+		}
+		else {
+			query.addCriteria(methodName.ilike(methodSignature + "*"));
+		}
 		
+		query.addCriteria(creationDate.between(startDate, endDate));
+
 		if(minExecutionTime != null) {
-			criteria.and(executionTime.ge(minExecutionTime));
+			query.addCriteria(executionTime.ge(minExecutionTime));
 		}
 		
 		if(maxExecutionTime != null) {
-			criteria.and(executionTime.le(maxExecutionTime));
+			query.addCriteria(executionTime.le(maxExecutionTime));
 		}
-		
-		if(startDate != null && endDate != null) {
-			criteria.and(creationDate.between(startDate, endDate));
-		}
-		
-		Results results = cache.createQuery()
-				.includeValues()
-				.addCriteria(criteria)
+
+		Results results = query
+				.includeKeys()
 				.execute();
 		
 		List<MethodTracer> methodTracers = new ArrayList<MethodTracer>();
 		
 		for(Result result : results.all()) {
-			if(result.getValue() != null) {
-				methodTracers.add((MethodTracer) result.getValue());
+			if(result.getKey() != null) {
+				Element element = cache.get(result.getKey());
+				methodTracers.add((MethodTracer) element.getObjectValue());
 			}
 		}
 			

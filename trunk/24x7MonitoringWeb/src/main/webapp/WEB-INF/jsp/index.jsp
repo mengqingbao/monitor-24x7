@@ -27,7 +27,7 @@
 				}
 				$img.attr('style', 'margin-right: 5px;');
 				li.append($img);
-				li.append('<a href="#">' + item.itemName + '</a>');
+				li.append('<a href="#"><span style="display:none">' + item.fullName + '</span>' + item.itemName + '</a>');
 				if(item.subItems.length > 0 ) {
 				    var ul2 = $('<ul>').appendTo(li);
 					createList(ul2, item.subItems);
@@ -36,7 +36,7 @@
 			});
 			
 		}
-
+	
 	 	function drawChart($tracersArray) {
 
 	        var data = google.visualization.arrayToDataTable($tracersArray);
@@ -61,36 +61,140 @@
 			return $return;
 	    }
 	    
+	    function setDateTimePickerEvent() {
+	    	$('#fromRange, #toRange').datetimepicker({
+				controlType: 'select',
+				timeFormat: 'hh:mm tt'
+			});
+	    	
+	    	$("#customRangeSubmit").click(function() {
+	    		
+	    		var $fromRange = $("#fromRange").val();
+       		    var $toRange = $("#toRange").val();
+       		    
+    		 	if(!$fromRange || !$toRange) {
+    		 		alert("'From' and 'To' ranges missing");
+    		 		return false;
+    		 	}
+    		 	
+    		 	var height = $(".center_content").css("height");
+				$("#ajax_box").css("height", height);
+				$("#ajax_box").show();
+
+				var $selectedTreeNode = $('#classTree').jstree('get_selected').attr('id');
+
+   			 	var searchFilter = new Object();
+			    searchFilter.fromRange = $fromRange;
+			    searchFilter.toRange = $toRange;
+			    retrievePerformanceNumbers(searchFilter, $selectedTreeNode);
+	    		  
+	    	});
+	    }
+		
+	    function setDefaultTextEvent() {
+	    	$(".defaultText").focus(function(arg) {
+   		        if ($(this).val() == $(this)[0].title){
+   		            $(this).removeClass("defaultTextActive");
+   		            $(this).val("");
+   		        }
+   		    });
+   		    
+   		    $(".defaultText").blur(function(){
+   		        if ($(this).val() == ""){
+   		            $(this).addClass("defaultTextActive");
+   		            $(this).val($(this)[0].title);
+   		        }
+   		    });
+   		    
+   		    $(".defaultText").blur(); 
+	    	
+	    }
+	    
 	    function setTimeRangeEventEvent() {
 			$('#timeRangeInMins').bind('change', function(ev) {
-		
+				var $selectedTimeRange = $(this).val();
+				if($selectedTimeRange == "custom") {
+					$("#customRangeSelector").css("visibility", "visible");
+					$("#resolutionInSecs").val("custom");
+					return false;
+				}
+				$("#customRangeSelector").css("visibility", "hidden");
 				var height = $(".center_content").css("height");
 				$("#ajax_box").css("height", height);
 				$("#ajax_box").show();
 
-				var $selectedTimeRange = $(this).val();
+				
 				var $selectedResolution = $selectedTimeRange;
 			 	$("#resolutionInSecs").val($selectedResolution);
-			 	
+			    var $selectedTreeNode = $('#classTree').jstree('get_selected').attr('id');
+
 			 	var searchFilter = new Object();
 			    searchFilter.timeRangeInMins = $selectedTimeRange;
 			    searchFilter.resolutionInSecs = $selectedResolution;
-			    var $jsonString = JSON.stringify( searchFilter );
-			    var $selectedTreeNode = $('#classTree').jstree('get_selected').attr('id');
+			    retrievePerformanceNumbers(searchFilter, $selectedTreeNode);
+			});
+		}
 		
-			    $.ajax(
-			            {
-			              url:"json/methodTracingInfo/" + escape($selectedTreeNode), 
-			              type: "POST",  
-			              contentType: "application/json; charset=utf-8",
-			              data:  $jsonString,
-			              complete: callback, 
-			            } ); 
-				function callback(jsonResponse) {
-					updateDataSet(jsonResponse);
+	    function setSearchEvent() {
+			$("#searchButton").click(function() {
+	    		
+				var $keyword = $("#searchKeyword").val();
+				if(!$keyword) {
+					alert("Please search for a keyword");
+					return false;
 				}
-		
-			 });
+				$("#classTree").jstree("search", $keyword);
+				  
+	    	});
+	    }
+	    
+	    function handlePerformanceStatsRetrieval($tracedItem, $searchedItems) {
+	    	
+	    	var height = $(".center_content").css("height");
+			$("#ajax_box").css("height", height);
+			$("#ajax_box").show();
+			
+			var $selectedTimeRange = $("#timeRangeInMins").val();
+			var $selectedResolution = $("#resolutionInSecs").val();
+			var $fromRange = $("#fromRange").val();
+			var $toRange = $("#toRange").val();
+			
+			var searchFilter = new Object();
+		    searchFilter.timeRangeInMins = $selectedTimeRange;
+		    searchFilter.resolutionInSecs = $selectedResolution;
+		    searchFilter.fromRange = $fromRange;
+		    searchFilter.toRange = $toRange;
+		    searchFilter.searchedItems = $searchedItems;
+		    retrievePerformanceNumbers(searchFilter, $tracedItem);
+	    	
+	    }
+	    
+		function retrievePerformanceNumbers(searchFilter, methodName) {
+			var $jsonString = JSON.stringify( searchFilter );
+			if(methodName == null) {
+				$("#ajax_box").hide();
+				alert("please select a node from the tree!");
+				return false;
+			}
+			if(searchFilter.timeRangeInMins == "custom" 
+					&& (!searchFilter.fromRange || !searchFilter.toRange)) {
+				$("#ajax_box").hide();
+				alert("please select a valid range");
+				return false;
+			}
+		    $.ajax(
+		            {
+		              url:"json/methodTracingInfo/" + escape(methodName), 
+		              type: "POST",  
+		              contentType: "application/json; charset=utf-8",
+		              data:  $jsonString,
+		              complete: callback, 
+		            } ); 
+			function callback(jsonResponse) {
+				updateDataSet(jsonResponse);
+			}
+
+			
 		}
 		
 		function updateDataSet(jsonResponse) {
@@ -166,7 +270,10 @@
 		}
         $(document).ready(function () {
         		setTimeRangeEventEvent();
-	        	var height = $(".center_content").css("height");
+        		setDateTimePickerEvent();
+        		setDefaultTextEvent();
+        		setSearchEvent();
+        		var height = $(".center_content").css("height");
 				$("#ajax_box").css("height", height);
 				$("#ajax_box").show();
 				
@@ -183,36 +290,35 @@
 							createList(ul, objectArray);
 							$("#classTree").html(ul);
 							$("#classTree")
-								.jstree({ "plugins" : ["themes","html_data","ui"] })
+								.jstree({"search" : {"case_insensitive" : true}, "plugins" : ["themes","html_data","ui", "search"] })
 								// 1) if using the UI plugin bind to select_node
 								.bind("select_node.jstree", function (event, data) { 
-									// `data.rslt.obj` is the jquery extended node that was clicked
-					
-									var height = $(".center_content").css("height");
-									$("#ajax_box").css("height", height);
-									$("#ajax_box").show();
-									
-									var $selectedTimeRange = $("#timeRangeInMins").val();
-									var $selectedResolution = $("#resolutionInSecs").val();
-
-									var searchFilter = new Object();
-								    searchFilter.timeRangeInMins = $selectedTimeRange;
-								    searchFilter.resolutionInSecs = $selectedResolution;
-								    var jsonString = JSON.stringify( searchFilter );
-								    
-					                $.ajax
-									(
-										{
-										  url:"json/methodTracingInfo/" + escape(data.rslt.obj.attr("id")), 
-										  type: "POST",  
-										  data: jsonString,
-										  contentType: "application/json; charset=utf-8",
-										  complete: function(jsonResponse) {
-											   updateDataSet(jsonResponse);
-										  }
-										} 
-									);
+									var $tracedItem = escape(data.rslt.obj.attr("id"));
+									handlePerformanceStatsRetrieval($tracedItem);
 	               
+								})
+								.bind("search.jstree", function (e, data) {
+									if(data.rslt.nodes.length == 0) {
+										alert("No results found! please redefine your search..");
+										return false;
+									}
+									var $searchedItems = [];
+									$.each(data.rslt.nodes, function(index, item) {
+										var $nodeName = item.parentElement.id;
+										var $exists = false;
+										$.each($searchedItems, function(i, value) {
+											if ($nodeName.indexOf(value) >= 0) {
+												$exists = true;
+												return true; // exit for loop.
+											}
+										});
+										if(!$exists) {
+											$searchedItems.push($nodeName);
+										}
+									});
+									var $tracedItem = $searchedItems[0];
+									$searchedItems.splice(0, 1); // remove first element.
+									handlePerformanceStatsRetrieval($tracedItem, $searchedItems);
 								})
 								// 2) if not using the UI plugin - the Anchor tags work as expected
 								//    so if the anchor has a HREF attirbute - the page will be changed
@@ -240,16 +346,27 @@
 	            </div>
 	 		</td>
 	 		<td width="75%">
-	 			<div class="filter">
-				 	time range: 
-				 			<select id="timeRangeInMins" name="timeRangeInMins" style="background:#F0F0F0;border:1px solid #e8e8e8">
+	 			<div class="filter" style="height:50px; margin:10px'">
+				 	<div class="floatL">
+				 		time range: 
+				 			<select id="timeRangeInMins" name="timeRangeInMins" style="background:#F0F0F0;border:1px solid #e8e8e8;margin:5px">
 				 			  <option value="30">Last 30 minutes</option>
 							  <option value="120">Last 2 hours</option>
 							  <option value="360">Last 6 hours</option>
 							  <option value="720">Last 12 hours</option>
 							  <option value="1440">Last 24 hours</option>
 							  <option value="10080">Last 7 days</option>
+							  <option value="custom">Custom Range</option>
 						    </select>
+						    
+						    <span id="customRangeSelector" style="visibility:hidden">
+						    	<br/>
+							    From: <input size=15 id="fromRange" /> 
+							    To: <input size="15" id="toRange" />
+							    <button id="customRangeSubmit">submit</button>
+							</span>
+					</div>
+					<div class="floatL" style="margin-left:-100px">
 					Resolution: 
 				 			<select id="resolutionInSecs" name="resolutionInSecs" style="background:#F0F0F0;border:1px solid #e8e8e8" disabled="disabled">
 							  <option value="30">30 secs</option>
@@ -258,7 +375,13 @@
 							  <option value="720">12 minutes</option>
 							  <option value="1440">24 minutes</option>
 							  <option value="10080">3 hours</option>
+							  <option value="custom">Custom</option>
 						    </select>
+					</div>
+					<div class="floatL" style="margin-left:20px">
+						<input size=50 id="searchKeyword" class="defaultText" title="search for class, method, SQL...."/>
+						<button id="searchButton">search</button>
+					</div>
 				 </div>
 	 			<div id="scrollbar1" >
 					<div class="scrollbar" style="display:none"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
@@ -276,25 +399,5 @@
 	 	</tr>
 
 	 </table>
-	<!--  <div id="splitter">
-	        <div>
-	            <div style="border: none;" id='jqxTree'>
-	               
-	            </div>
-	        </div>
-	        <div id="ContentPanel">
-	        	<div id="scrollbar1">
-					<div class="scrollbar" style="display:none"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
-					<div class="viewport">
-						 <div class="overview" id="statsGrid">
-						 	
-						 </div>
-					</div>
-				</div>	
-	        	<div id="statsChart" style="width:99%; height:400px">
-	        		
-	        	</div>
-	        </div>
-	 </div>
-	  -->
+	
  </div>
