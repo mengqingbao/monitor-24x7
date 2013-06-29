@@ -2,6 +2,12 @@ package com.ombillah.monitoring.domain;
 
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -13,14 +19,32 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * @author Oussama M Billah
  * 
  */
+@Entity
+@Table(name="METHOD_TRACER")
 public class MethodTracer extends BaseDomain {
 
 	private static final long serialVersionUID = 1L;
+	
+	@Id
+	@GeneratedValue
+	private Long id;
+	
+	@Column(name="METHOD_NAME")
 	private String methodName;
+	
+	@Column
 	private double average;
+	
+	@Column
 	private double max;
+	
+	@Column
 	private double min;
+	
+	@Column
 	private double count;
+	
+	@Column(name="CREATION_DATE")
 	private Date creationDate;
 
 	public MethodTracer() {
@@ -37,7 +61,16 @@ public class MethodTracer extends BaseDomain {
 		this.count = count;
 		this.creationDate = creationDate;
 	}
+	
 
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+	
 	public String getMethodName() {
 		return methodName;
 	}

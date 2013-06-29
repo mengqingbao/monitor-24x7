@@ -12,19 +12,6 @@ import java.util.Map;
 public class CollectedData {
 	
 	private Map<String, List<Long>> methodTracer = new HashMap<String, List<Long>>();
-	private static CollectedData collectedData;
-	
-
-	private CollectedData() {
-		// private Constructor.
-	}
-	
-	public static CollectedData getInstance() {
-		if(collectedData == null) {
-			collectedData = new CollectedData();
-		}
-		return collectedData;
-	}
 
 	public Map<String, List<Long>> getMethodTracer() {
 		return methodTracer;
