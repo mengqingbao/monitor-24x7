@@ -30,19 +30,41 @@
 			<artifactId>guice</artifactId>
 			<version>3.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.inject.extensions</groupId>
+			<artifactId>guice-persist</artifactId>
+			<version>3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-entitymanager</artifactId>
+			<version>4.2.2.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+			<version>1.0.0.GA</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator-annotation-processor</artifactId>
+			<version>4.1.0.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.9</version>
+		</dependency>
 		<!-- Apache util classes -->
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
-		</dependency>
-		<!-- Ehcache Monitor <dependency> <groupId>org.terracotta</groupId> <artifactId>ehcache-probe</artifactId> 
-			<version>1.0.3</version> </dependency> -->
-		<!-- Quartz Scheduler -->
-		<dependency>
-			<groupId>org.quartz-scheduler</groupId>
-			<artifactId>quartz</artifactId>
-			<version>2.1.5</version>
 		</dependency>
 		<!-- Apache Commons Math classes -->
 		<dependency>
@@ -50,24 +72,6 @@
 			<artifactId>commons-math</artifactId>
 			<version>2.2</version>
 		</dependency>
-		<!-- Big Memory Go -->
-		<dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>bigmemory</artifactId>
-			<version>4.0.0</version>
-			<type>jar</type>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache-ee</artifactId>
-			<version>2.7.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.6.6</version>
-		</dependency>
-
 
 	</dependencies>
 
