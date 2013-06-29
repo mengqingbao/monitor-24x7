@@ -1,36 +1,27 @@
 package com.ombillah.monitoring.domain;
 
-import java.util.Date;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
- * Domain class to represent a method tracer.
- * 
+ * Domain object for method signatures table.
  * @author Oussama M Billah
- * 
+ *
  */
-public class MethodTracer extends BaseDomain {
-
+public class MethodSignature extends BaseDomain {
+	
 	private static final long serialVersionUID = 1L;
 	
-	private Long id;
 	private String methodName;
-	private Double average;
-	private Double max;
-	private Double min;
-	private Long count;
-	private Date creationDate;
-
-	public Long getId() {
-		return id;
+	
+	public MethodSignature() {
+		// default constructor.
 	}
-
-	public void setId(Long id) {
-		this.id = id;
+	
+	public MethodSignature(String methodName) {
+		this.methodName = methodName;
 	}
 	
 	public String getMethodName() {
@@ -41,45 +32,6 @@ public class MethodTracer extends BaseDomain {
 		this.methodName = methodName;
 	}
 
-	public double getAverage() {
-		return average;
-	}
-
-	public void setAverage(double average) {
-		this.average = average;
-	}
-
-	public Double getMax() {
-		return max;
-	}
-
-	public void setMax(Double max) {
-		this.max = max;
-	}
-
-	public Double getMin() {
-		return min;
-	}
-
-	public void setMin(Double min) {
-		this.min = min;
-	}
-
-	public Long getCount() {
-		return count;
-	}
-
-	public void setCount(Long count) {
-		this.count = count;
-	}
-
-	public Date getCreationDate() {
-		return creationDate;
-	}
-
-	public void setCreationDate(Date creationDate) {
-		this.creationDate = creationDate;
-	}
 
 	@Override
 	public boolean equals(Object object) {
@@ -106,5 +58,6 @@ public class MethodTracer extends BaseDomain {
 	public int hashCode() {
 		return HashCodeBuilder.reflectionHashCode(this);
 	}
+
 
 }

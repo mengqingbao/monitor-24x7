@@ -1,11 +1,6 @@
 package com.ombillah.monitoring.config;
 
 
-import java.net.URL;
-
-import net.sf.ehcache.CacheManager;
-
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
  
@@ -19,11 +14,5 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan(basePackages = {"com.ombillah.monitoring"})
 public class ContextConfiguration {
  
-    @Bean
-    public CacheManager cacheManager() {
-    	URL url = getClass().getResource("/ehcache.xml");
-    	CacheManager cacheManager = CacheManager.create(url);
-    	return cacheManager;
-    }
  
 }

@@ -225,11 +225,12 @@
 			var $maxSize = 0;
 			$.each($jsonArray.tracersByResolution, function (key, value) {
 				$.each(value, function (index, item) {
-			    	$headersArray.push(item.methodName);
+					if($.inArray(item.methodName, $headersArray) == -1) {
+						$headersArray.push(item.methodName);
+					}
 				});
 				
 			});
-			
 			$tracersArray.push($headersArray);
 			
 			$.each($jsonArray.tracersByResolution, function (key, value) {
@@ -256,17 +257,54 @@
 				enableMenu     : false
 			},
 			{
-				columnTitles : ['Method Name','Avg Response<br/>Time (ms)','Max','Min','Count'],
+				columnTitles : ['Method Name','Response<br/>Time (ms)','Max','Min','Count'],
 				columnValues : $groupedArray
 		       
 			});
+			
+			setCheckboxesValues();
+			updateChartOnCheckBoxChange();
+				
 			$(".scrollbar").css("display", "block");
 			$('#scrollbar1').tinyscrollbar();
 			var callback = function() {drawChart($tracersArray)};
 			
 			google.load("visualization", "1", {packages:["corechart"], "callback" : callback});
 
-
+		}
+		
+		function setCheckboxesValues() {
+			var rows = $(".tidy_table tr");
+			rows.each(function(index) {
+				var $checkbox;
+				if(index == 0) {
+					$checkbox = $(this).children("th")[0].lastChild;
+					$checkbox.value = 'all';
+				}
+				else {
+					$checkbox = $(this).children("td")[0].lastChild;
+					$checkbox.value = $(this).children("td")[1].innerText;
+				}
+		    });
+		}
+		
+		function updateChartOnCheckBoxChange() {
+			$('.tidy_table :checkbox').change(function() {
+				var $checkedItems;
+				if(this.value == "all") {
+					$checkedItems = $('.tidy_table :checkbox').map(function () {
+						  return this.value;
+						}).get();
+				}
+				else {
+					$checkedItems = $('.tidy_table :checkbox:checked').map(function () {
+						 return this.value;
+						}).get();
+				}
+					 
+				alert($checkedItems);
+			});
+			
 		}
         $(document).ready(function () {
         		setTimeRangeEventEvent();
@@ -298,6 +336,7 @@
 	               
 								})
 								.bind("search.jstree", function (e, data) {
+									$('#classTree').jstree('close_all');
 									if(data.rslt.nodes.length == 0) {
 										alert("No results found! please redefine your search..");
 										return false;

@@ -1,5 +1,6 @@
 package com.ombillah.monitoring.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -14,7 +15,7 @@ public class TracingFilter extends BaseDomain {
 	private Integer resolutionInSecs;
 	private String fromRange;
 	private String toRange;
-	private List<String> searchedItems;
+	private List<String> searchedItems = new ArrayList<String>();
 
 	public Integer getTimeRangeInMins() {
 		return timeRangeInMins;
