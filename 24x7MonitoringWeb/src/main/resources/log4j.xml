@@ -11,16 +11,19 @@
 		</layout>
 	</appender>
 
-	<logger name="org.springframework">
-		<level value="debug" />
+	<logger name="org.springframework.jdbc.core">
+		<level value="TRACE" />
 	</logger>
 	
 	<logger name="org.hibernate.SQL">
-		<level value="error" />
+		<level value="debug" />
 	</logger>
-
-
-	<!-- Root Logger -->
+	
+	<!-- <logger name="org.hibernate.type">
+		<level value="trace" />
+	</logger>
+	 -->
+		<!-- Root Logger -->
 	<root>
 		<priority value="warn" />
 		<appender-ref ref="console" />
