@@ -1,17 +1,19 @@
 package com.ombillah.monitoring.webapp.controller;
 
+import java.io.OutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
+import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.title.LegendTitle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,11 +22,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.ombillah.monitoring.domain.ChartProperties;
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MethodTracer;
 import com.ombillah.monitoring.domain.MethodTracers;
 import com.ombillah.monitoring.domain.MonitoredItem;
+import com.ombillah.monitoring.domain.SearchFilter;
 import com.ombillah.monitoring.domain.TracingFilter;
+import com.ombillah.monitoring.service.ChartingService;
 import com.ombillah.monitoring.service.CollectorService;
 
 
@@ -42,6 +47,9 @@ public class MonitoringClientController {
 	
 	@Autowired
 	private CollectorService collectorService;
+	
+	@Autowired 
+	private ChartingService chartingService;
 	
 	@RequestMapping(value="/json/getTracedMethods", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
@@ -65,12 +73,25 @@ public class MonitoringClientController {
 			@PathVariable("methodSignature") String methodSignature,
 			@RequestBody TracingFilter tracingFilter) throws ParseException {
 		 
-		 SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 		 Integer timeRangeinMins = tracingFilter.getTimeRangeInMins();
-		 Integer resolutionInSec = tracingFilter.getResolutionInSecs();
 		 String fromRange = tracingFilter.getFromRange();
 		 String toRange = tracingFilter.getToRange();
 		 
+		 SearchFilter searchFilter = createSearchFilter(methodSignature,
+				timeRangeinMins, tracingFilter.getSearchedItems(), fromRange, toRange);
+
+		 List<MethodTracer> methodTracersGrouped = collectorService.retrieveMethodStatisticsGroupedByMethodName(searchFilter);
+		 
+		 MethodTracers result = new MethodTracers();
+		 result.setTracersGrouped(methodTracersGrouped);
+		 
+		 return result;		
+	}
+
+	private SearchFilter createSearchFilter(String methodSignature,
+		    Integer timeRangeinMins, List<String> methodSignatures,
+			String fromRange, String toRange) throws ParseException {
+
 		 Date minDate;
 		 Date maxDate;
 		 
@@ -80,10 +101,7 @@ public class MonitoringClientController {
 			 maxDate = format.parse(toRange);
 			 Long differenceinMs = maxDate.getTime() - minDate.getTime();
 			 timeRangeinMins = (int) TimeUnit.MILLISECONDS.toMinutes(differenceinMs);
-			 resolutionInSec = timeRangeinMins;
-			 if(resolutionInSec < DEFAULT_RESOLUTION) {
-				 resolutionInSec = DEFAULT_RESOLUTION;
-			 }
+		
 		 } else {
 
 			 maxDate = new Date();
@@ -93,61 +111,49 @@ public class MonitoringClientController {
 			 minDate = cal.getTime();
 		 }
 		 
-		 
+         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 		 if(timeRangeinMins > TWENTY_FOUR_HOURS_IN_MIN) {
 			 dateFormat = new SimpleDateFormat("MMM d HH:mm");
 		 }
 		 else if(timeRangeinMins > ONE_MINUTE) {
 			 dateFormat = new SimpleDateFormat("HH:mm");
 		 }
-
-		 List<String> methodSignatures = tracingFilter.getSearchedItems();
+		 
 		 methodSignatures.add(methodSignature);
-		 List<MethodTracer> methodTracersGrouped = collectorService.retrieveMethodStatisticsGroupedByMethodName(
-				 methodSignatures, 
-				 null, 
-				 null, 
-				 minDate, 
-				 maxDate);
+		 SearchFilter searchFilter = new SearchFilter();
+		 searchFilter.setResolutionInSecs(timeRangeinMins);
+		 searchFilter.setMaxDate(maxDate);
+		 searchFilter.setMinDate(minDate);
+		 searchFilter.setMethodSignatures(methodSignatures);
+		 searchFilter.setDateFormat(dateFormat);
 		 
-		 Map<String, List<MethodTracer>> tracersByResolution = groupTracersByResolution(
-				methodSignatures,
-				dateFormat, 
-				resolutionInSec, 
-				maxDate, 
-				minDate);
-		 
-		 MethodTracers result = new MethodTracers();
-		 result.setTracersGrouped(methodTracersGrouped);
-		 result.setTracersByResolution(tracersByResolution);
-
-		return result;		
+		return searchFilter;
 	}
-
-	private Map<String, List<MethodTracer>> groupTracersByResolution(
-			List<String> methodSignatures,
-			SimpleDateFormat dateFormat, 
-			int resolutionInSec, 
-			Date maxDate,
-		    Date minDate
-		    ) {
-		 Map<String, List<MethodTracer>> tracersByResolution = new LinkedHashMap<String, List<MethodTracer>>();
-		 Date currentDate  = new Date(minDate.getTime());
-		 Calendar cal = Calendar.getInstance();
-		 while(currentDate.compareTo(maxDate) <=0 ) {
-			 cal.setTime(currentDate);
-			 cal.add(Calendar.SECOND, resolutionInSec);
-			 currentDate = cal.getTime();
-			// System.out.println("Min=" + minDate + "Max=" +currentDate);
-//			 List<MethodTracer> tracersInRange = collectorService.retrieveMethodStatistics(methodSignatures, 
-//					 null, 
-//					 null, 
-//					 minDate, 
-//					 currentDate);
-//			 tracersByResolution.put(dateFormat.format(currentDate), tracersInRange);
-		 }
-		return tracersByResolution;
-	}
-
+	
+	@RequestMapping("viewchart.png")
+	public void renderChart(
+			String methodSignature,
+			Integer timeRangeInMins, 
+			Integer resolutionInSec,
+			String fromRange,
+			String toRange,
+			ArrayList<String> searchedItems,
+			OutputStream stream)
+			throws Exception {
 		
+		SearchFilter searchFilter = createSearchFilter(methodSignature,
+				timeRangeInMins, searchedItems, fromRange, toRange);
+		
+		ChartProperties properties = new ChartProperties();
+		properties.setTitle("Average Response Time");
+		properties.setxAxisLabel("Date");
+		properties.setyAxisLabel("Response Time");
+		
+		JFreeChart chart = chartingService.generateChart(properties, searchFilter);
+		LegendTitle legend = chart.getLegend();
+		int width = 900;
+		int height = 500;
+		ChartUtilities.writeChartAsPNG(stream, chart, width, height);
+		stream.close();
+	}		
 }

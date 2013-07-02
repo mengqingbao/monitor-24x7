@@ -10,7 +10,8 @@
 			<param name="ConversionPattern" value="%d{yyyy MMM dd HH:mm:ss} [%t] %-5p %c %x - %m%n"/>
 		</layout>
 	</appender>
-
+	
+	
 	<logger name="org.springframework.jdbc.core">
 		<level value="TRACE" />
 	</logger>
