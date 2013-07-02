@@ -1,8 +1,6 @@
 package com.ombillah.monitoring.service.impl;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.ombillah.monitoring.dao.CollectorDAO;
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MethodTracer;
+import com.ombillah.monitoring.domain.SearchFilter;
 import com.ombillah.monitoring.service.CollectorService;
 
 /**
@@ -27,25 +26,12 @@ public class CollectorServiceImpl implements CollectorService {
 		return collectorDao.retrieveMethodSignatures();
 	}
 	
-	public List<MethodTracer> retrieveMethodStatistics(
-			List<String> methodSignatures, 
-			Long minExecTime, Long maxExecTime,
-			Date minDate, Date maxDate) {
-		
-		return collectorDao.retrieveMethodStatistics(methodSignatures,
-				minExecTime, maxExecTime,
-				minDate, maxDate);
-			
+	public List<MethodTracer> retrieveMethodStatistics(SearchFilter searchFilter) {
+		return collectorDao.retrieveMethodStatistics(searchFilter);
 	}
 	
-	public List<MethodTracer> retrieveMethodStatisticsGroupedByMethodName(
-			List<String> methodSignatures, 
-			Long minExecTime, Long maxExecTime,
-			Date minDate, Date maxDate) {
-		
-		return collectorDao.retrieveMethodStatisticsGroupedByMethodName(methodSignatures,
-				minExecTime, maxExecTime,
-				minDate, maxDate);
+	public List<MethodTracer> retrieveMethodStatisticsGroupedByMethodName(SearchFilter searchFilter) {
+		return collectorDao.retrieveMethodStatisticsGroupedByMethodName(searchFilter);
 			
 	}
 	

@@ -22,26 +22,41 @@ public aspect MethodExecutionTimeAspect {
 	private CollectedData collectedData;
 	
 	public MethodExecutionTimeAspect() {
-		Injector injector = Bootstrap.init();
-		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-		Runnable collectorJob = injector.getInstance(MethodExecutionTimeCollector.class);
-		scheduler.scheduleAtFixedRate(collectorJob, 1, 1, TimeUnit.SECONDS);
-		collectedData = injector.getInstance(CollectedData.class);
+		bootstrap();
+		
+	}
 
+	private void bootstrap() {
+		try {
+			Injector injector = Bootstrap.init();
+			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+			Runnable collectorJob = injector.getInstance(MethodExecutionTimeCollector.class);
+			scheduler.scheduleAtFixedRate(collectorJob, 30, 30, TimeUnit.SECONDS);
+			collectedData = injector.getInstance(CollectedData.class);
+		} catch (Throwable ex) {
+			// do nothing.
+		}
 	}
 	
-	pointcut publicOperation() : execution(public * com.ombillah.ecom4j..*(..));
+	pointcut publicOperation() : execution(public * com.ombillah.ecom4j..*(..)) || execution(public * org.apache.commons..*(..));
 	Object around() : publicOperation() {
 
 	    Long start = System.currentTimeMillis();
 	    Object ret = proceed();
 	    Long end = System.currentTimeMillis();
-
+	    
+	    if(collectedData == null) {
+	    	bootstrap();
+	    }
+	    if(collectedData == null) {
+	    	return ret;
+	    }
+	    
 	    Long executionTime = (end-start);
 	    String signature = thisJoinPointStaticPart.getSignature().getName();
 	    String className = thisJoinPointStaticPart.getSignature().getDeclaringTypeName();
 	    String methodName = className + "." + signature + "()";
-
+	    
 	    // ignore spring proxies as the original call will also be intercepted.
 	    if(!StringUtils.contains(className, "$Proxy")) {
 	    	Map<String, List<Long>> tracers = collectedData.getMethodTracer();
@@ -51,9 +66,7 @@ public aspect MethodExecutionTimeAspect {
 	    	}
 	    	
 	    	boolean added = execTimes.add(executionTime);
-	    	if(!added) {
-				System.out.println(methodName + " not added");
-			}
+	    	
 	    	tracers.put(methodName, execTimes);
 	    	collectedData.setMethodTracer(tracers);
 	    }

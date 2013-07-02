@@ -6,36 +6,44 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
- * Domain object for method signatures table.
+ * Domain class for ChartProperties
  * @author Oussama M Billah
  *
  */
-public class MethodSignature extends BaseDomain {
-	
+public class ChartProperties extends BaseDomain {
+
 	private static final long serialVersionUID = 1L;
-	
-	private String methodName;
-	
-	public MethodSignature() {
-		// default constructor.
-	}
-	
-	public MethodSignature(String methodName) {
-		this.methodName = methodName;
-	}
-	
-	public String getMethodName() {
-		return methodName;
+	private String title;
+	private String xAxisLabel;
+	private String yAxisLabel;
+
+	public String getTitle() {
+		return title;
 	}
 
-	public void setMethodName(String methodName) {
-		this.methodName = methodName;
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
+	public String getxAxisLabel() {
+		return xAxisLabel;
+	}
+
+	public void setxAxisLabel(String xAxisLabel) {
+		this.xAxisLabel = xAxisLabel;
+	}
+
+	public String getyAxisLabel() {
+		return yAxisLabel;
+	}
+
+	public void setyAxisLabel(String yAxisLabel) {
+		this.yAxisLabel = yAxisLabel;
+	}
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof MethodSignature)) {
+		if (!(object instanceof ChartProperties)) {
 			return false;
 		}
 
@@ -58,6 +66,5 @@ public class MethodSignature extends BaseDomain {
 	public int hashCode() {
 		return HashCodeBuilder.reflectionHashCode(this);
 	}
-
 
 }

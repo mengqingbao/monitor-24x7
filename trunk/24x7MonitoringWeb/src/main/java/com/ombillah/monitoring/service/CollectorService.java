@@ -1,10 +1,10 @@
 package com.ombillah.monitoring.service;
 
-import java.util.Date;
 import java.util.List;
 
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MethodTracer;
+import com.ombillah.monitoring.domain.SearchFilter;
 
 /**
  * Service class for collecting performance data.
@@ -15,14 +15,7 @@ public interface CollectorService {
 
 	public List<MethodSignature> retrieveMethodSignatures();
 
-	public List<MethodTracer> retrieveMethodStatistics(
-			List<String> methodSignatures, 
-			Long minExecTime, Long maxExecTime,
-			Date minDate, Date maxDate);
-			
-	public List<MethodTracer> retrieveMethodStatisticsGroupedByMethodName(
-			List<String> methodSignature,
-			Long minExecTime, 
-			Long maxExecTime,
-			Date minDate, Date maxDate);
+	public List<MethodTracer> retrieveMethodStatistics(SearchFilter searchFilter);
+	
+	public List<MethodTracer> retrieveMethodStatisticsGroupedByMethodName(SearchFilter searchFilter);
 }

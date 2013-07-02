@@ -1,10 +1,10 @@
 package com.ombillah.monitoring.dao;
 
-import java.util.Date;
 import java.util.List;
 
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MethodTracer;
+import com.ombillah.monitoring.domain.SearchFilter;
 
 /**
  * Data Access Object for collecting performance data.
@@ -15,12 +15,8 @@ public interface CollectorDAO {
 	
 	public List<MethodSignature> retrieveMethodSignatures();
 	
-	public List<MethodTracer> retrieveMethodStatisticsGroupedByMethodName(
-			List<String> methodSignatures, 
-			Long minExecTime, Long maxExecTime,
-			Date minDate, Date maxDate);
+	public List<MethodTracer> retrieveMethodStatisticsGroupedByMethodName(SearchFilter searchFilter);
 
-	public List<MethodTracer> retrieveMethodStatistics(
-			List<String> methodSignatures, Long minExecTime, Long maxExecTime,
-			Date minDate, Date maxDate);
+	public List<MethodTracer> retrieveMethodStatistics(SearchFilter searchFilter);
+
 }

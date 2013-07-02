@@ -2,4 +2,8 @@
 	<aspects>
 		<aspect  name="com.ombillah.monitoring.aspectj.MethodExecutionTimeAspect"/>
 	</aspects>
+	
+	<weaver>
+       <exclude within="com.ombillah.monitoring..*" />
+   </weaver>
 </aspectj>

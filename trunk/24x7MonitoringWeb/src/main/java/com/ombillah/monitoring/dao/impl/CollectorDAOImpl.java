@@ -3,9 +3,11 @@ package com.ombillah.monitoring.dao.impl;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.ArrayUtils;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ombillah.monitoring.dao.CollectorDAO;
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MethodTracer;
+import com.ombillah.monitoring.domain.SearchFilter;
 
 
 /**
@@ -29,6 +32,7 @@ import com.ombillah.monitoring.domain.MethodTracer;
 public class CollectorDAOImpl implements CollectorDAO {
 	
 	private JdbcTemplate jdbcTemplate;
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
     public void setDataSource(BasicDataSource dataSource) {
@@ -52,10 +56,7 @@ public class CollectorDAOImpl implements CollectorDAO {
 	}
 
 	@Transactional(readOnly = true)
-	public List<MethodTracer> retrieveMethodStatisticsGroupedByMethodName(
-			List<String> methodSignatures, 
-			Long minExecTime, Long maxExecTime,
-			Date minDate, Date maxDate) {
+	public List<MethodTracer> retrieveMethodStatisticsGroupedByMethodName(SearchFilter searchFilter) {
 		List<Object> params = new ArrayList<Object>();
 		int[] types = new int[0];
 		
@@ -65,23 +66,25 @@ public class CollectorDAOImpl implements CollectorDAO {
 				" WHERE CREATION_DATE BETWEEN ? " +
 				"	AND ? ";
 		
-		params.add(minDate);
-		params.add(maxDate);
-		types = ArrayUtils.add(types, Types.DATE);
-		types = ArrayUtils.add(types, Types.DATE);
+		params.add(DATE_FORMAT.format(searchFilter.getMinDate()));
+		params.add(DATE_FORMAT.format(searchFilter.getMaxDate()));
+		types = ArrayUtils.add(types, Types.VARCHAR);
+		types = ArrayUtils.add(types, Types.VARCHAR);
 		
-		if(minExecTime != null) {
+		if(searchFilter.getMinExecTime() != null) {
 			query += " AND AVERAGE > ? ";
-			params.add(minExecTime);
+			params.add(searchFilter.getMinExecTime());
 			types = ArrayUtils.add(types, Types.DOUBLE);
 		}
 		
-		if(maxExecTime != null) {
+		if(searchFilter.getMaxExecTime() != null) {
 			query += " AND AVERAGE < ? ";
-			params.add(maxExecTime);
+			params.add(searchFilter.getMaxExecTime());
 			types = ArrayUtils.add(types, Types.DOUBLE);
 		}
 		query += "  AND ( ";
+		
+		List<String> methodSignatures = searchFilter.getMethodSignatures();
 		for(int i = 0; i < methodSignatures.size(); i++) {
 			String methodName = methodSignatures.get(i);
 			params.add(methodName + "%");
@@ -96,7 +99,7 @@ public class CollectorDAOImpl implements CollectorDAO {
 		List<MethodTracer> result = this.jdbcTemplate.query(query, params.toArray(), types,
 				 new RowMapper<MethodTracer>() {
            public MethodTracer mapRow(ResultSet rs, int rowNum) throws SQLException {
-           	MethodTracer tracer = new MethodTracer();
+           		MethodTracer tracer = new MethodTracer();
 				tracer.setMethodName(rs.getString("METHOD_NAME"));
 				tracer.setAverage(rs.getDouble("AVERAGE"));
 				tracer.setCount(rs.getLong("COUNT"));
@@ -108,35 +111,36 @@ public class CollectorDAOImpl implements CollectorDAO {
 		return result;
 	}
 
-	public List<MethodTracer> retrieveMethodStatistics(
-			List<String> methodSignatures, Long minExecTime, Long maxExecTime,
-			Date minDate, Date maxDate) {
+	@Transactional(readOnly = true)
+	public List<MethodTracer> retrieveMethodStatistics(SearchFilter searchFilter) {
 		
 		List<Object> params = new ArrayList<Object>();
 		int[] types = new int[0];
-		
-		String query = "SELECT ID, METHOD_NAME, AVERAGE, COUNT, MAX, MIN, CREATION_DATE" + 
+		String query = "SELECT CREATION_DATE, METHOD_NAME, ROUND(SUM(AVERAGE * COUNT) / SUM(COUNT)) AS AVERAGE, " +
+				" MIN(MIN) AS MIN, MAX(MAX) AS MAX, SUM(COUNT) AS COUNT " + 
 				" FROM METHOD_TRACER " + 
 				" WHERE CREATION_DATE BETWEEN ? " +
 				"	AND ? ";
+			
+		params.add(DATE_FORMAT.format(searchFilter.getMinDate()));
+		params.add(DATE_FORMAT.format(searchFilter.getMaxDate()));
+		types = ArrayUtils.add(types, Types.VARCHAR);
+		types = ArrayUtils.add(types, Types.VARCHAR);
 		
-		params.add(minDate);
-		params.add(maxDate);
-		types = ArrayUtils.add(types, Types.DATE);
-		types = ArrayUtils.add(types, Types.DATE);
-		
-		if(minExecTime != null) {
+		if(searchFilter.getMinExecTime() != null) {
 			query += " AND AVERAGE > ? ";
-			params.add(minExecTime);
+			params.add(searchFilter.getMinExecTime());
 			types = ArrayUtils.add(types, Types.DOUBLE);
 		}
 		
-		if(maxExecTime != null) {
+		if(searchFilter.getMaxExecTime() != null) {
 			query += " AND AVERAGE < ? ";
-			params.add(maxExecTime);
+			params.add(searchFilter.getMaxExecTime());
 			types = ArrayUtils.add(types, Types.DOUBLE);
 		}
 		query += "  AND ( ";
+		
+		List<String> methodSignatures = searchFilter.getMethodSignatures();
 		for(int i = 0; i < methodSignatures.size(); i++) {
 			String methodName = methodSignatures.get(i);
 			params.add(methodName + "%");
@@ -146,22 +150,25 @@ public class CollectorDAOImpl implements CollectorDAO {
 				query += " OR ";
 			}
 		}
-		query += " )";
 		
-
+		query += " ) GROUP BY UNIX_TIMESTAMP(CREATION_DATE) DIV " + searchFilter.getResolutionInSecs()
+				+ ", METHOD_NAME ORDER BY METHOD_NAME";
+		
 		List<MethodTracer> result = this.jdbcTemplate.query(query, params.toArray(), types,
 				 new RowMapper<MethodTracer>() {
-            public MethodTracer mapRow(ResultSet rs, int rowNum) throws SQLException {
-            	MethodTracer tracer = new MethodTracer();
+          public MethodTracer mapRow(ResultSet rs, int rowNum) throws SQLException {
+          		MethodTracer tracer = new MethodTracer();
 				tracer.setMethodName(rs.getString("METHOD_NAME"));
 				tracer.setAverage(rs.getDouble("AVERAGE"));
 				tracer.setCount(rs.getLong("COUNT"));
 				tracer.setMax(rs.getDouble("MAX"));
 				tracer.setMin(rs.getDouble("MIN"));
-				tracer.setCreationDate(rs.getDate("CREATION_DATE"));
+				tracer.setCreationDate(rs.getTimestamp("CREATION_DATE"));
+
 				return tracer;
-            }
-        });
+          }
+      });
+		
 		return result;
 	}
 

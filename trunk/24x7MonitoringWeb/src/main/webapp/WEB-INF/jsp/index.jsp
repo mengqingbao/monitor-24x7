@@ -191,13 +191,13 @@
 		              complete: callback, 
 		            } ); 
 			function callback(jsonResponse) {
-				updateDataSet(jsonResponse);
+				updateDataSet(searchFilter, methodName, jsonResponse);
 			}
 
 			
 		}
 		
-		function updateDataSet(jsonResponse) {
+		function updateDataSet(searchFilter, methodName, jsonResponse) {
 		    $("#ajax_box").hide();
 	  		var $jsonArray = jQuery.parseJSON(jsonResponse.responseText);
 	  		
@@ -217,40 +217,6 @@
 			    $itemArray.push(value.count);
 		    	$groupedArray.push($itemArray);
 			});   
-			
-			var $tracersArray = [];
-			var $headersArray = [];
-			var $dataArray = [];
-			$headersArray.push('Time');
-			var $maxSize = 0;
-			$.each($jsonArray.tracersByResolution, function (key, value) {
-				$.each(value, function (index, item) {
-					if($.inArray(item.methodName, $headersArray) == -1) {
-						$headersArray.push(item.methodName);
-					}
-				});
-				
-			});
-			$tracersArray.push($headersArray);
-			
-			$.each($jsonArray.tracersByResolution, function (key, value) {
-				var $dataArray = [];
-			    $dataArray.push(key);
-			    $.each($headersArray, function (index, methodName) {
-			    	if(index == 0) {
-			    		return true;
-			    	}
-			    	var $tracer = findTracer(methodName, value);
-			    	if($tracer == null) {
-			    		$dataArray.push(null);
-			    	}
-			    	else {
-			    		$dataArray.push($tracer.average);
-			    	}
-				});
-				$tracersArray.push($dataArray);
-			});
-			
 			$('#statsGrid')
 			.TidyTable({
 				enableCheckbox : true,
@@ -267,10 +233,18 @@
 				
 			$(".scrollbar").css("display", "block");
 			$('#scrollbar1').tinyscrollbar();
-			var callback = function() {drawChart($tracersArray)};
 			
-			google.load("visualization", "1", {packages:["corechart"], "callback" : callback});
-
+		    var params = {};
+		    params['methodSignature'] = methodName;
+	    	params['timeRangeInMins'] = searchFilter.timeRangeInMins;
+	    	params['resolutionInSecs'] = searchFilter.resolutionInSecs;
+	    	params['fromRange'] = searchFilter.fromRange;
+	    	params['toRange'] = searchFilter.toRange;
+	    	params['searchItems'] = searchFilter.searchedItems;
+	    	
+		    var paramsString = $.param(params, true);
+		    var newSrc = "viewchart.png?" + $.param(params, true);
+		    $("#chartFrame").attr('src', newSrc);
 		}
 		
 		function setCheckboxesValues() {
@@ -430,8 +404,11 @@
 						 </div>
 					</div>
 				</div>	
-	        	<div id="statsChart" style="width:99%; height:400px">
-	        		
+				<div style="height:20px">&nbsp</div>
+	        	<div id="statsChart" style="width:99%; height:1000px">
+	        		<iframe id="chartFrame" width="99%" height="1000px" frameborder="0">
+					  <p>Your browser does not support iframes.</p>
+					</iframe>
 	        	</div>
 	 		</td>	
 	 		
