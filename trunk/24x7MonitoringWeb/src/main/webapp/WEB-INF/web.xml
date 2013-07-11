@@ -19,12 +19,22 @@
 		<servlet-name>24x7MonitoringWeb</servlet-name>
 		<url-pattern>/</url-pattern>
 	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>DisplayChart</servlet-name>
+		<servlet-class>org.jfree.chart.servlet.DisplayChart</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>DisplayChart</servlet-name>
+		<url-pattern>/DisplayChart</url-pattern>
+	</servlet-mapping>
 	
 	<!-- Set session timeout in minutes -->
 	<session-config>
 		<session-timeout>15</session-timeout>
 	</session-config>
-	
+
 	<error-page>
 		<error-code>404</error-code>
 		<location>/Notfound.jsp</location>

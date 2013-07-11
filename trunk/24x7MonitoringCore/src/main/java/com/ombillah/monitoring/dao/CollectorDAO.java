@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MethodTracer;
+import com.ombillah.monitoring.domain.QueryTracer;
+import com.ombillah.monitoring.domain.SqlQuery;
 
 /**
  * Data Access Object for collecting performance data.
@@ -17,4 +19,10 @@ public interface CollectorDAO {
 	public void saveMethodSignatures(List<MethodSignature> methodSignatures);
 	
 	public void saveMethodTracingStatistics(List<MethodTracer> methodTracers);
+
+	public List<SqlQuery> retrieveSqlQueries();
+
+	public void saveQueryTracingStatistics(List<QueryTracer> tracers);
+
+	public void saveSqlQueries(List<SqlQuery> queries);
 }

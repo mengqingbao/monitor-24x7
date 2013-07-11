@@ -18,7 +18,7 @@
 <script type="text/javascript" src="js/jquery-ui.min.js"></script>
 <script type="text/javascript" src="js/jquery-ui-timepicker-addon.js"></script>
 <script type="text/javascript" src="js/jquery-ui-sliderAccess.js"></script>
-<script src="js/jquery.tidy.table.min.js"></script>
+<script src="js/jquery.tidy.table.js"></script>
 <script src="js/jquery.tinyscrollbar.js"></script>
 <script src="js/jquery.jstree.js"></script>
 

@@ -113,9 +113,8 @@
 	    function setTimeRangeEventEvent() {
 			$('#timeRangeInMins').bind('change', function(ev) {
 				var $selectedTimeRange = $(this).val();
-				if($selectedTimeRange == "custom") {
+				if(!$selectedTimeRange) {
 					$("#customRangeSelector").css("visibility", "visible");
-					$("#resolutionInSecs").val("custom");
 					return false;
 				}
 				$("#customRangeSelector").css("visibility", "hidden");
@@ -125,12 +124,10 @@
 
 				
 				var $selectedResolution = $selectedTimeRange;
-			 	$("#resolutionInSecs").val($selectedResolution);
 			    var $selectedTreeNode = $('#classTree').jstree('get_selected').attr('id');
 
 			 	var searchFilter = new Object();
 			    searchFilter.timeRangeInMins = $selectedTimeRange;
-			    searchFilter.resolutionInSecs = $selectedResolution;
 			    retrievePerformanceNumbers(searchFilter, $selectedTreeNode);
 			});
 		}
@@ -148,35 +145,35 @@
 	    	});
 	    }
 	    
-	    function handlePerformanceStatsRetrieval($tracedItem, $searchedItems) {
+	    function handlePerformanceStatsRetrieval($tracedItem, $searchedItems, $updateChartOnly) {
 	    	
 	    	var height = $(".center_content").css("height");
 			$("#ajax_box").css("height", height);
 			$("#ajax_box").show();
 			
 			var $selectedTimeRange = $("#timeRangeInMins").val();
-			var $selectedResolution = $("#resolutionInSecs").val();
 			var $fromRange = $("#fromRange").val();
 			var $toRange = $("#toRange").val();
 			
 			var searchFilter = new Object();
 		    searchFilter.timeRangeInMins = $selectedTimeRange;
-		    searchFilter.resolutionInSecs = $selectedResolution;
 		    searchFilter.fromRange = $fromRange;
 		    searchFilter.toRange = $toRange;
 		    searchFilter.searchedItems = $searchedItems;
-		    retrievePerformanceNumbers(searchFilter, $tracedItem);
+		    retrievePerformanceNumbers(searchFilter, $tracedItem, $updateChartOnly);
 	    	
 	    }
 	    
-		function retrievePerformanceNumbers(searchFilter, methodName) {
+		function retrievePerformanceNumbers(searchFilter, methodName, $updateChartOnly) {
+			$("#chart").attr('src', "about:blank");
+			
 			var $jsonString = JSON.stringify( searchFilter );
 			if(methodName == null) {
 				$("#ajax_box").hide();
 				alert("please select a node from the tree!");
 				return false;
 			}
-			if(searchFilter.timeRangeInMins == "custom" 
+			if(!searchFilter.timeRangeInMins 
 					&& (!searchFilter.fromRange || !searchFilter.toRange)) {
 				$("#ajax_box").hide();
 				alert("please select a valid range");
@@ -184,21 +181,22 @@
 			}
 		    $.ajax(
 		            {
-		              url:"json/methodTracingInfo/" + escape(methodName), 
+		              url:"json/methodTracingInfo/" + methodName, 
 		              type: "POST",  
 		              contentType: "application/json; charset=utf-8",
 		              data:  $jsonString,
 		              complete: callback, 
 		            } ); 
 			function callback(jsonResponse) {
-				updateDataSet(searchFilter, methodName, jsonResponse);
+				updateDataSet(searchFilter, methodName, jsonResponse, $updateChartOnly);
 			}
 
 			
 		}
 		
-		function updateDataSet(searchFilter, methodName, jsonResponse) {
+		function updateDataSet(searchFilter, methodName, jsonResponse, $updateChartOnly) {
 		    $("#ajax_box").hide();
+		    
 	  		var $jsonArray = jQuery.parseJSON(jsonResponse.responseText);
 	  		
 	  		if($jsonArray.tracersGrouped.length == 0 ) {
@@ -206,60 +204,65 @@
 	  			$(".scrollbar").css("display", "none");
 	  			return;
 	  		}
-	  		var $groupedArray = [];
 	  		
-			$.each($jsonArray.tracersGrouped, function (index, value) {
-				var $itemArray = [];
-			    $itemArray.push(value.methodName);
-			    $itemArray.push(parseFloat(value.average).toFixed(2));
-			    $itemArray.push(value.max);
-			    $itemArray.push(value.min);
-			    $itemArray.push(value.count);
-		    	$groupedArray.push($itemArray);
-			});   
-			$('#statsGrid')
-			.TidyTable({
-				enableCheckbox : true,
-				enableMenu     : false
-			},
-			{
-				columnTitles : ['Method Name','Response<br/>Time (ms)','Max','Min','Count'],
-				columnValues : $groupedArray
-		       
-			});
-			
-			setCheckboxesValues();
-			updateChartOnCheckBoxChange();
+	  		if(!$updateChartOnly) {
+	  			var $groupedArray = [];
+		  		
+				$.each($jsonArray.tracersGrouped, function (index, value) {
+					var $itemArray = [];
+				    $itemArray.push(value.methodName);
+				    $itemArray.push(parseFloat(value.average).toFixed(2));
+				    $itemArray.push(value.max);
+				    $itemArray.push(value.min);
+				    $itemArray.push(value.count);
+			    	$groupedArray.push($itemArray);
+				});   
+				$('#statsGrid')
+				.TidyTable({
+					enableCheckbox : true,
+					enableMenu     : false
+				},
+				{
+					columnTitles : ['Method Name','Response<br/>Time (ms)','Max','Min','Count'],
+					columnValues : $groupedArray
+			       
+				});
 				
-			$(".scrollbar").css("display", "block");
-			$('#scrollbar1').tinyscrollbar();
-			
-		    var params = {};
-		    params['methodSignature'] = methodName;
-	    	params['timeRangeInMins'] = searchFilter.timeRangeInMins;
-	    	params['resolutionInSecs'] = searchFilter.resolutionInSecs;
-	    	params['fromRange'] = searchFilter.fromRange;
-	    	params['toRange'] = searchFilter.toRange;
-	    	params['searchItems'] = searchFilter.searchedItems;
+				updateChartOnCheckBoxChange();
+					
+				$(".scrollbar").css("display", "block");
+				$('#scrollbar1').tinyscrollbar();
+	  		}
+	  		
+	  		var $chartForm = $('#chartForm');
+	  		var $methodSignature = $("<input>").attr("type", "hidden").attr("name", "methodSignature").val(methodName);
+	  		var $timeRangeInMins = $("<input>").attr("type", "hidden").attr("name", "timeRangeInMins").val(searchFilter.timeRangeInMins);
+	  		var $fromRange = $("<input>").attr("type", "hidden").attr("name", "fromRange").val(searchFilter.fromRange);
+	  		var $toRange = $("<input>").attr("type", "hidden").attr("name", "toRange").val(searchFilter.toRange);
+	  		
+	  		$chartForm.append($methodSignature);
+	  		$chartForm.append($timeRangeInMins);
+	  		$chartForm.append($fromRange);
+	  		$chartForm.append($toRange);
+	  		$chartForm.append($toRange);
+
+		   
+	    	if(searchFilter.searchedItems != null 
+	    			&& searchFilter.searchedItems != undefined
+	    			&& searchFilter.searchedItems.length > 0 ) {
+	    		
+	    		searchFilter.searchedItems.forEach(function (item) { 
+	    	  		var $searchedItems = $("<input>").attr("type", "hidden").attr("name", "searchedItems").val(item);
+	    	  		$chartForm.append($searchedItems);
+			    });
+	    	} else {
+	    		var $searchedItems = $("<input>").attr("type", "hidden").attr("name", "searchedItems").val("");
+    	  		$chartForm.append($searchedItems);
+	    	}
 	    	
-		    var paramsString = $.param(params, true);
-		    var newSrc = "viewchart.png?" + $.param(params, true);
-		    $("#chartFrame").attr('src', newSrc);
-		}
-		
-		function setCheckboxesValues() {
-			var rows = $(".tidy_table tr");
-			rows.each(function(index) {
-				var $checkbox;
-				if(index == 0) {
-					$checkbox = $(this).children("th")[0].lastChild;
-					$checkbox.value = 'all';
-				}
-				else {
-					$checkbox = $(this).children("td")[0].lastChild;
-					$checkbox.value = $(this).children("td")[1].innerText;
-				}
-		    });
+	    	
+	    	$chartForm.submit();
+	    	$chartForm.html('');
 		}
 		
 		function updateChartOnCheckBoxChange() {
@@ -269,6 +272,7 @@
 					$checkedItems = $('.tidy_table :checkbox').map(function () {
 						  return this.value;
 						}).get();
+					$checkedItems.splice(0, 1);
 				}
 				else {
 					$checkedItems = $('.tidy_table :checkbox:checked').map(function () {
@@ -276,7 +280,9 @@
 						}).get();
 				}
 					 
-				alert($checkedItems);
+				var $tracedItem = $checkedItems[0];
+				$checkedItems.splice(0, 1); // remove first element.
+				handlePerformanceStatsRetrieval($tracedItem, $checkedItems, true);
 			});
 			
 		}
@@ -305,7 +311,7 @@
 								.jstree({"search" : {"case_insensitive" : true}, "plugins" : ["themes","html_data","ui", "search"] })
 								// 1) if using the UI plugin bind to select_node
 								.bind("select_node.jstree", function (event, data) { 
-									var $tracedItem = escape(data.rslt.obj.attr("id"));
+									var $tracedItem = data.rslt.obj.attr("id");
 									handlePerformanceStatsRetrieval($tracedItem);
 	               
 								})
@@ -369,7 +375,7 @@
 							  <option value="720">Last 12 hours</option>
 							  <option value="1440">Last 24 hours</option>
 							  <option value="10080">Last 7 days</option>
-							  <option value="custom">Custom Range</option>
+							  <option value="">Custom Range</option>
 						    </select>
 						    
 						    <span id="customRangeSelector" style="visibility:hidden">
@@ -388,7 +394,7 @@
 							  <option value="720">12 minutes</option>
 							  <option value="1440">24 minutes</option>
 							  <option value="10080">3 hours</option>
-							  <option value="custom">Custom</option>
+							  <option value="">Custom</option>
 						    </select>
 					</div>
 					<div class="floatL" style="margin-left:20px">
@@ -405,10 +411,13 @@
 					</div>
 				</div>	
 				<div style="height:20px">&nbsp</div>
-	        	<div id="statsChart" style="width:99%; height:1000px">
-	        		<iframe id="chartFrame" width="99%" height="1000px" frameborder="0">
+	        	<div id="statsChart" style="width:99%; height:600px" >
+					<iframe id="chart" style="border:none;" width="100%" height="550px" marginheight="0" marginwidth="0" frameborder="0">
 					  <p>Your browser does not support iframes.</p>
 					</iframe>
+					<form id="chartForm" target="chart" action="getchart.do" method="post">
+
+					</form>
 	        	</div>
 	 		</td>	
 	 		

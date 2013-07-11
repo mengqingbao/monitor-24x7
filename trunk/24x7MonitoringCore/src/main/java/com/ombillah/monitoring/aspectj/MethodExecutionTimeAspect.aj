@@ -15,6 +15,8 @@ import com.google.inject.Injector;
 import com.ombillah.monitoring.bootstrap.Bootstrap;
 import com.ombillah.monitoring.domain.CollectedData;
 import com.ombillah.monitoring.jobs.MethodExecutionTimeCollector;
+import com.google.inject.Key;
+import com.google.inject.name.Names;
 
 public aspect MethodExecutionTimeAspect {
 	
@@ -32,13 +34,14 @@ public aspect MethodExecutionTimeAspect {
 			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 			Runnable collectorJob = injector.getInstance(MethodExecutionTimeCollector.class);
 			scheduler.scheduleAtFixedRate(collectorJob, 30, 30, TimeUnit.SECONDS);
-			collectedData = injector.getInstance(CollectedData.class);
+			collectedData = injector.getInstance(Key.get(CollectedData.class, Names.named("MethodCollector")));
+
 		} catch (Throwable ex) {
 			// do nothing.
 		}
 	}
 	
-	pointcut publicOperation() : execution(public * com.ombillah.ecom4j..*(..)) || execution(public * org.apache.commons..*(..));
+	pointcut publicOperation() : execution(public * com.ombillah.ecom4j..*(..));
 	Object around() : publicOperation() {
 
 	    Long start = System.currentTimeMillis();
@@ -59,16 +62,14 @@ public aspect MethodExecutionTimeAspect {
 	    
 	    // ignore spring proxies as the original call will also be intercepted.
 	    if(!StringUtils.contains(className, "$Proxy")) {
-	    	Map<String, List<Long>> tracers = collectedData.getMethodTracer();
+	    	Map<String, List<Long>> tracers = collectedData.getTracer();
 	    	List<Long> execTimes = tracers.get(methodName);
 	    	if(execTimes == null) {
 	    		execTimes = Collections.synchronizedList(new ArrayList<Long>());
 	    	}
-	    	
-	    	boolean added = execTimes.add(executionTime);
-	    	
+	    	execTimes.add(executionTime);
 	    	tracers.put(methodName, execTimes);
-	    	collectedData.setMethodTracer(tracers);
+	    	collectedData.setTracer(tracers);
 	    }
 
 	    return ret;

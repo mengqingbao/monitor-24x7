@@ -11,14 +11,14 @@ import java.util.Map;
  */
 public class CollectedData {
 	
-	private Map<String, List<Long>> methodTracer = new HashMap<String, List<Long>>();
+	private Map<String, List<Long>> tracer = new HashMap<String, List<Long>>();
 
-	public Map<String, List<Long>> getMethodTracer() {
-		return methodTracer;
+	public Map<String, List<Long>> getTracer() {
+		return tracer;
 	}
 
-	public void setMethodTracer(Map<String, List<Long>> methodTracer) {
-		this.methodTracer = methodTracer;
+	public void setTracer(Map<String, List<Long>> tracer) {
+		this.tracer = tracer;
 	}
 
 }
