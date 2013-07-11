@@ -18,4 +18,7 @@
 		 <put-attribute name="body" value="/WEB-INF/jsp/index.jsp"/>
 	</definition>
 	
+	<definition name="test" template="/WEB-INF/jsp/xy_chart.jsp">
+	</definition>
+	
 </tiles-definitions>

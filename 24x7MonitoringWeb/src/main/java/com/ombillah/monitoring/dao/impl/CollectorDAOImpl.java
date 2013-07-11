@@ -152,7 +152,7 @@ public class CollectorDAOImpl implements CollectorDAO {
 		}
 		
 		query += " ) GROUP BY UNIX_TIMESTAMP(CREATION_DATE) DIV " + searchFilter.getResolutionInSecs()
-				+ ", METHOD_NAME ORDER BY METHOD_NAME";
+				+ ", METHOD_NAME ORDER BY METHOD_NAME, CREATION_DATE";
 		
 		List<MethodTracer> result = this.jdbcTemplate.query(query, params.toArray(), types,
 				 new RowMapper<MethodTracer>() {

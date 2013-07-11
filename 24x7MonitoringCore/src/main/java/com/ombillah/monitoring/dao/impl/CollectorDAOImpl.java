@@ -10,6 +10,8 @@ import com.google.inject.persist.Transactional;
 import com.ombillah.monitoring.dao.CollectorDAO;
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MethodTracer;
+import com.ombillah.monitoring.domain.QueryTracer;
+import com.ombillah.monitoring.domain.SqlQuery;
 
 
 /**
@@ -26,7 +28,7 @@ public class CollectorDAOImpl implements CollectorDAO {
 	@Transactional
 	public List<MethodSignature> retrieveMethodSignatures() {
 		String sql = "SELECT m FROM MethodSignature m ";
-		 List<MethodSignature> list = entityManager.get().createQuery(sql).getResultList();
+		List<MethodSignature> list = entityManager.get().createQuery(sql).getResultList();
 		return list; 
 	}
 	
@@ -46,6 +48,32 @@ public class CollectorDAOImpl implements CollectorDAO {
 	public void saveMethodTracingStatistics(List<MethodTracer> methodTracers) {
 		for(MethodTracer tracer : methodTracers) {
 			entityManager.get().persist(tracer);
+		}
+		
+	}
+
+	@Transactional
+	@SuppressWarnings("unchecked")
+	public List<SqlQuery> retrieveSqlQueries() {
+		String sql = "SELECT q FROM SqlQuery q ";
+		List<SqlQuery> list = entityManager.get().createQuery(sql).getResultList();
+		return list;
+	}
+
+	@Transactional
+	public void saveQueryTracingStatistics(List<QueryTracer> tracers) {
+		for(QueryTracer tracer : tracers) {
+			entityManager.get().persist(tracer);
+		}
+	}
+
+	@Transactional
+	public void saveSqlQueries(List<SqlQuery> queries) {
+		for(SqlQuery query : queries) {
+			SqlQuery result = entityManager.get().find(SqlQuery.class, query.getSqlQuery());
+			if(result == null) {
+				entityManager.get().persist(query);
+			}	
 		}
 		
 	}

@@ -16,11 +16,12 @@
 		<level value="TRACE" />
 	</logger>
 	
-	<logger name="org.hibernate.SQL">
+	<!--<logger name="org.springframework">
 		<level value="debug" />
 	</logger>
+
 	
-	<!-- <logger name="org.hibernate.type">
+	 <logger name="org.hibernate.type">
 		<level value="trace" />
 	</logger>
 	 -->
