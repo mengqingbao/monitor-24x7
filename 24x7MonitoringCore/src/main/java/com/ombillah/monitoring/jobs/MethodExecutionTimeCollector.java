@@ -15,7 +15,7 @@ import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import com.google.inject.name.Named;
 import com.ombillah.monitoring.domain.CollectedData;
 import com.ombillah.monitoring.domain.MethodSignature;
-import com.ombillah.monitoring.domain.MethodTracer;
+import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.service.CollectorService;
 
 public class MethodExecutionTimeCollector implements Runnable {
@@ -32,7 +32,7 @@ public class MethodExecutionTimeCollector implements Runnable {
 		try {
 			Map<String, List<Long>> tracers = collectedData.getTracer();
 			
-			List<MethodTracer> list = new CopyOnWriteArrayList<MethodTracer>();
+			List<MonitoredItemTracer> list = new CopyOnWriteArrayList<MonitoredItemTracer>();
 			Set<MethodSignature> methodSignatures = new HashSet<MethodSignature>();
 			Date timestamp = new Date();
 
@@ -50,7 +50,7 @@ public class MethodExecutionTimeCollector implements Runnable {
 				double min = stats.getMin();
 				double count = execTimes.size();
 				
-				MethodTracer tracer = new MethodTracer(methodName, average, max, min, count, timestamp);
+				MonitoredItemTracer tracer = new MonitoredItemTracer(methodName, "java", average, max, min, count, timestamp);
 				list.add(tracer);
 				
 				methodSignatures.add(new MethodSignature(methodName));
@@ -59,7 +59,7 @@ public class MethodExecutionTimeCollector implements Runnable {
 			if(tracers != null && !tracers.isEmpty()) {
 				List<MethodSignature> currentList = collectorService.retrieveMethodSignatures();
 				methodSignatures.addAll(currentList);
-				collectorService.saveMethodTracingStatistics(list);
+				collectorService.saveMonitoredItemTracingStatistics(list);
 				collectorService.saveMethodSignatures(new ArrayList<MethodSignature>(methodSignatures));
 				System.out.println("inserted " + list.size() + " items into method Tracer Table at " + timestamp);
 		    	tracers.clear();

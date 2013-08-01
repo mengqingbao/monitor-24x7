@@ -5,9 +5,9 @@ import java.util.List;
 import javax.inject.Inject;
 
 import com.ombillah.monitoring.dao.CollectorDAO;
+import com.ombillah.monitoring.domain.ExceptionLogger;
 import com.ombillah.monitoring.domain.MethodSignature;
-import com.ombillah.monitoring.domain.MethodTracer;
-import com.ombillah.monitoring.domain.QueryTracer;
+import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SqlQuery;
 import com.ombillah.monitoring.service.CollectorService;
 
@@ -30,20 +30,21 @@ public class CollectorServiceImpl implements CollectorService {
 
 	}
 
-	public void saveMethodTracingStatistics(List<MethodTracer> methodTracers) {
-		collectorDao.saveMethodTracingStatistics(methodTracers);
+	public void saveMonitoredItemTracingStatistics(List<MonitoredItemTracer> MonitoredItemTracers) {
+		collectorDao.saveMonitoredItemTracingStatistics(MonitoredItemTracers);
 	}
 
 	public List<SqlQuery> retrieveSqlQueries() {
 		return collectorDao.retrieveSqlQueries();
 	}
 
-	public void saveQueryTracingStatistics(List<QueryTracer> tracers) {
-		collectorDao.saveQueryTracingStatistics(tracers);		
-	}
-
 	public void saveSqlQueries(List<SqlQuery> queries) {
 		collectorDao.saveSqlQueries(queries);
+	}
+
+	public void saveException(ExceptionLogger logger) {
+		collectorDao.saveException(logger);
+		
 	}
 
 }

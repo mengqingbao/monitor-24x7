@@ -5,12 +5,11 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -18,8 +17,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ombillah.monitoring.dao.CollectorDAO;
+import com.ombillah.monitoring.domain.ExceptionLogger;
 import com.ombillah.monitoring.domain.MethodSignature;
-import com.ombillah.monitoring.domain.MethodTracer;
+import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SearchFilter;
 
 
@@ -56,13 +56,13 @@ public class CollectorDAOImpl implements CollectorDAO {
 	}
 
 	@Transactional(readOnly = true)
-	public List<MethodTracer> retrieveMethodStatisticsGroupedByMethodName(SearchFilter searchFilter) {
+	public List<MonitoredItemTracer> retrieveItemStatisticsGroupedByMonitoredItem(SearchFilter searchFilter) {
 		List<Object> params = new ArrayList<Object>();
 		int[] types = new int[0];
 		
-		String query = "SELECT METHOD_NAME, ROUND(SUM(AVERAGE * COUNT) / SUM(COUNT)) AS AVERAGE, " +
+		String query = "SELECT ITEM_NAME, ROUND(SUM(AVERAGE * COUNT) / SUM(COUNT)) AS AVERAGE, " +
 				" MIN(MIN) AS MIN, MAX(MAX) AS MAX, SUM(COUNT) AS COUNT " + 
-				" FROM METHOD_TRACER " + 
+				" FROM MONITORED_ITEM_TRACER " + 
 				" WHERE CREATION_DATE BETWEEN ? " +
 				"	AND ? ";
 		
@@ -86,21 +86,51 @@ public class CollectorDAOImpl implements CollectorDAO {
 		
 		List<String> methodSignatures = searchFilter.getMethodSignatures();
 		for(int i = 0; i < methodSignatures.size(); i++) {
-			String methodName = methodSignatures.get(i);
-			params.add(methodName + "%");
-			types = ArrayUtils.add(types, Types.VARCHAR);
-			query += "METHOD_NAME LIKE ? " ;
+			String itemName = methodSignatures.get(i);
+			String[] queryTypes = {"SELECT", "UPDATE", "INSERT", "DELETE" };
+			if(StringUtils.equals(itemName, "SQL")) {
+				query += "TYPE = ? " ;
+				params.add("SQL");
+				types = ArrayUtils.add(types, Types.VARCHAR);
+			} 
+			else if(StringUtils.equals(itemName, "OTHER")) {
+				query += "( TYPE = ? AND ITEM_NAME NOT LIKE ? AND ITEM_NAME NOT LIKE ? " ;
+				query += "AND ITEM_NAME NOT LIKE ? AND ITEM_NAME NOT LIKE ? )";
+				params.add("SQL");
+				params.add("SELECT%");
+				params.add("UPDATE%");
+				params.add("DELETE%");
+				params.add("INSERT%");
+				types = ArrayUtils.add(types, Types.VARCHAR);
+				types = ArrayUtils.add(types, Types.VARCHAR);
+				types = ArrayUtils.add(types, Types.VARCHAR);
+				types = ArrayUtils.add(types, Types.VARCHAR);
+				types = ArrayUtils.add(types, Types.VARCHAR);
+			}
+			else if(ArrayUtils.contains(queryTypes, itemName)) {
+				query += "(TYPE = ? AND ITEM_NAME LIKE ? ) " ;
+				params.add("SQL");
+				params.add(itemName + "%");
+				types = ArrayUtils.add(types, Types.VARCHAR);
+				types = ArrayUtils.add(types, Types.VARCHAR);
+			}
+			else {
+				params.add(itemName + "%");
+				types = ArrayUtils.add(types, Types.VARCHAR);
+				query += "ITEM_NAME LIKE ? " ;
+			}
+			
 			if(i != methodSignatures.size() - 1) {
 				query += " OR ";
 			}
 		}
-		query += " ) GROUP BY METHOD_NAME ORDER BY AVERAGE DESC";
+		query += " ) GROUP BY ITEM_NAME ORDER BY AVERAGE DESC";
 		
-		List<MethodTracer> result = this.jdbcTemplate.query(query, params.toArray(), types,
-				 new RowMapper<MethodTracer>() {
-           public MethodTracer mapRow(ResultSet rs, int rowNum) throws SQLException {
-           		MethodTracer tracer = new MethodTracer();
-				tracer.setMethodName(rs.getString("METHOD_NAME"));
+		List<MonitoredItemTracer> result = this.jdbcTemplate.query(query, params.toArray(), types,
+				 new RowMapper<MonitoredItemTracer>() {
+           public MonitoredItemTracer mapRow(ResultSet rs, int rowNum) throws SQLException {
+           		MonitoredItemTracer tracer = new MonitoredItemTracer();
+				tracer.setItemName(rs.getString("ITEM_NAME"));
 				tracer.setAverage(rs.getDouble("AVERAGE"));
 				tracer.setCount(rs.getLong("COUNT"));
 				tracer.setMax(rs.getDouble("MAX"));
@@ -112,13 +142,13 @@ public class CollectorDAOImpl implements CollectorDAO {
 	}
 
 	@Transactional(readOnly = true)
-	public List<MethodTracer> retrieveMethodStatistics(SearchFilter searchFilter) {
+	public List<MonitoredItemTracer> retrieveItemStatistics(SearchFilter searchFilter) {
 		
 		List<Object> params = new ArrayList<Object>();
 		int[] types = new int[0];
-		String query = "SELECT CREATION_DATE, METHOD_NAME, ROUND(SUM(AVERAGE * COUNT) / SUM(COUNT)) AS AVERAGE, " +
+		String query = "SELECT CREATION_DATE, ITEM_NAME, ROUND(SUM(AVERAGE * COUNT) / SUM(COUNT)) AS AVERAGE, " +
 				" MIN(MIN) AS MIN, MAX(MAX) AS MAX, SUM(COUNT) AS COUNT " + 
-				" FROM METHOD_TRACER " + 
+				" FROM MONITORED_ITEM_TRACER " + 
 				" WHERE CREATION_DATE BETWEEN ? " +
 				"	AND ? ";
 			
@@ -142,23 +172,64 @@ public class CollectorDAOImpl implements CollectorDAO {
 		
 		List<String> methodSignatures = searchFilter.getMethodSignatures();
 		for(int i = 0; i < methodSignatures.size(); i++) {
-			String methodName = methodSignatures.get(i);
-			params.add(methodName + "%");
-			types = ArrayUtils.add(types, Types.VARCHAR);
-			query += "METHOD_NAME LIKE ? " ;
+			String itemName = methodSignatures.get(i);
+			String[] queryTypes = {"SELECT", "UPDATE", "INSERT", "DELETE" };
+			
+			if(StringUtils.equals(itemName, "Memory")) {
+				query += "TYPE = ? " ;
+				params.add("MEMORY");
+				types = ArrayUtils.add(types, Types.VARCHAR);
+			}
+			else if(StringUtils.equals(itemName, "Database Connections")) {
+				query += "TYPE = ? " ;
+				params.add("ACTIVE_CONNECTION");
+				types = ArrayUtils.add(types, Types.VARCHAR);
+			}
+			else if(StringUtils.equals(itemName, "SQL")) {
+				query += "TYPE = ? " ;
+				params.add("SQL");
+				types = ArrayUtils.add(types, Types.VARCHAR);
+			}
+			else if(StringUtils.equals(itemName, "OTHER")) {
+				query += "( TYPE = ? AND ITEM_NAME NOT LIKE ? AND ITEM_NAME NOT LIKE ? " ;
+				query += "AND ITEM_NAME NOT LIKE ? AND ITEM_NAME NOT LIKE ? )";
+				params.add("SQL");
+				params.add("SELECT%");
+				params.add("UPDATE%");
+				params.add("DELETE%");
+				params.add("INSERT%");
+				types = ArrayUtils.add(types, Types.VARCHAR);
+				types = ArrayUtils.add(types, Types.VARCHAR);
+				types = ArrayUtils.add(types, Types.VARCHAR);
+				types = ArrayUtils.add(types, Types.VARCHAR);
+				types = ArrayUtils.add(types, Types.VARCHAR);
+			}
+			else if(ArrayUtils.contains(queryTypes, itemName)) {
+				query += "(TYPE = ? AND ITEM_NAME LIKE ? ) " ;
+				params.add("SQL");
+				params.add(itemName + "%");
+				types = ArrayUtils.add(types, Types.VARCHAR);
+				types = ArrayUtils.add(types, Types.VARCHAR);
+			}
+			else {
+				params.add(itemName + "%");
+				types = ArrayUtils.add(types, Types.VARCHAR);
+				query += "ITEM_NAME LIKE ? " ;
+			}
+			
 			if(i != methodSignatures.size() - 1) {
 				query += " OR ";
 			}
 		}
 		
 		query += " ) GROUP BY UNIX_TIMESTAMP(CREATION_DATE) DIV " + searchFilter.getResolutionInSecs()
-				+ ", METHOD_NAME ORDER BY METHOD_NAME, CREATION_DATE";
+				+ ", ITEM_NAME ORDER BY ITEM_NAME, CREATION_DATE";
 		
-		List<MethodTracer> result = this.jdbcTemplate.query(query, params.toArray(), types,
-				 new RowMapper<MethodTracer>() {
-          public MethodTracer mapRow(ResultSet rs, int rowNum) throws SQLException {
-          		MethodTracer tracer = new MethodTracer();
-				tracer.setMethodName(rs.getString("METHOD_NAME"));
+		List<MonitoredItemTracer> result = this.jdbcTemplate.query(query, params.toArray(), types,
+				 new RowMapper<MonitoredItemTracer>() {
+          public MonitoredItemTracer mapRow(ResultSet rs, int rowNum) throws SQLException {
+          		MonitoredItemTracer tracer = new MonitoredItemTracer();
+				tracer.setItemName(rs.getString("ITEM_NAME"));
 				tracer.setAverage(rs.getDouble("AVERAGE"));
 				tracer.setCount(rs.getLong("COUNT"));
 				tracer.setMax(rs.getDouble("MAX"));
@@ -171,5 +242,40 @@ public class CollectorDAOImpl implements CollectorDAO {
 		
 		return result;
 	}
+	
+	@Transactional(readOnly = true)
+	public List<String> retrieveSqlQueries() {
+		String query = "SELECT DISTINCT SQL_QUERY FROM SQL_QUERIES";
+		List<String> list = jdbcTemplate.queryForList(query, String.class);
+		return list;
+	}
+
+	@Transactional(readOnly = true)
+	public List<ExceptionLogger> retrieveExceptionLoggers(SearchFilter searchFilter) {
+		List<Object> params = new ArrayList<Object>();
+		int[] types = new int[0];
+		String query = "SELECT EXCEPTION_MESSAGE, STACKTRACE, COUNT(1) AS COUNT " +
+				" FROM EXCEPTION_LOGGER " + 
+				" WHERE CREATION_DATE BETWEEN ? AND ? " +
+				" GROUP BY STACKTRACE";
+			
+		params.add(DATE_FORMAT.format(searchFilter.getMinDate()));
+		params.add(DATE_FORMAT.format(searchFilter.getMaxDate()));
+		types = ArrayUtils.add(types, Types.VARCHAR);
+		types = ArrayUtils.add(types, Types.VARCHAR);
+		
+		List<ExceptionLogger> result = this.jdbcTemplate.query(query, params.toArray(), types,
+				 new RowMapper<ExceptionLogger>() {
+	          public ExceptionLogger mapRow(ResultSet rs, int rowNum) throws SQLException {
+	        	  	ExceptionLogger logger = new ExceptionLogger();
+	        	  	logger.setCount(rs.getInt("COUNT"));
+	        	  	logger.setExceptionMessage(rs.getString("EXCEPTION_MESSAGE"));
+	        	  	logger.setStacktrace(rs.getString("STACKTRACE"));
+					return logger;
+	          }
+		});
+		return result;
+	}
+
 
 }

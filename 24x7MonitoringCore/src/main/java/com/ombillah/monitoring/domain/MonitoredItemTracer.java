@@ -20,8 +20,8 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * 
  */
 @Entity
-@Table(name="METHOD_TRACER")
-public class MethodTracer extends BaseDomain {
+@Table(name="MONITORED_ITEM_TRACER")
+public class MonitoredItemTracer extends BaseDomain {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -29,8 +29,11 @@ public class MethodTracer extends BaseDomain {
 	@GeneratedValue
 	private Long id;
 	
-	@Column(name="METHOD_NAME")
-	private String methodName;
+	@Column(name="ITEM_NAME")
+	private String itemName;
+	
+	@Column
+	private String type;
 	
 	@Column
 	private double average;
@@ -47,14 +50,15 @@ public class MethodTracer extends BaseDomain {
 	@Column(name="CREATION_DATE")
 	private Date creationDate;
 
-	public MethodTracer() {
+	public MonitoredItemTracer() {
 		// default constructor();
 	}
 	
-	public MethodTracer(String methodName, double average, double max,
+	public MonitoredItemTracer(String itemName, String type, double average, double max,
 			double min, double count, Date creationDate) {
 
-		this.methodName = methodName;
+		this.itemName = itemName;
+		this.type = type;
 		this.average = average;
 		this.max = max;
 		this.min = min;
@@ -62,7 +66,6 @@ public class MethodTracer extends BaseDomain {
 		this.creationDate = creationDate;
 	}
 	
-
 	public Long getId() {
 		return id;
 	}
@@ -71,12 +74,20 @@ public class MethodTracer extends BaseDomain {
 		this.id = id;
 	}
 	
-	public String getMethodName() {
-		return methodName;
+	public String getItemName() {
+		return itemName;
 	}
 
-	public void setMethodName(String methodName) {
-		this.methodName = methodName;
+	public void setItemName(String itemName) {
+		this.itemName = itemName;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	public double getAverage() {
@@ -121,7 +132,7 @@ public class MethodTracer extends BaseDomain {
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof MethodTracer)) {
+		if (!(object instanceof MonitoredItemTracer)) {
 			return false;
 		}
 

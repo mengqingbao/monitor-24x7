@@ -2,41 +2,7 @@
 	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 	<script type="text/javascript">
 		chart = null;
-	
-		function createList(ul, array) {
-			$.each(array, function(index, item) {
-			    var li = $(document.createElement('li'));
-				li.attr("id", item.fullName);
-				var $img = $(document.createElement('img'));
-				var $isClass = true;
-				$.each(item.subItems, function(i, value) {
-					if(value.subItems.length > 0) {
-						$isClass = false;
-						return;
-					}
-				});
-				 if(item.subItems.length == 0) {
-					$img.attr('src', 'images/method.png');
-				}
-				else if(item.subItems[0].itemName.indexOf("()") >= 0) {
-					$img.attr('src', 'images/class.png');
-				}
-				
-				else {
-					$img.attr('src', 'images/folder.png');
-				}
-				$img.attr('style', 'margin-right: 5px;');
-				li.append($img);
-				li.append('<a href="#"><span style="display:none">' + item.fullName + '</span>' + item.itemName + '</a>');
-				if(item.subItems.length > 0 ) {
-				    var ul2 = $('<ul>').appendTo(li);
-					createList(ul2, item.subItems);
-	 			}
-				ul.append(li);
-			});
-			
-		}
-	
+		
 	 	function drawChart($tracersArray) {
 
 	        var data = google.visualization.arrayToDataTable($tracersArray);
@@ -50,10 +16,10 @@
 			chart.draw(data, options);
 	    }
 	    
-	    function findTracer($methodName, $tracers) {
+	    function findTracer($itemName, $tracers) {
 	    	var $return = null;
 	    	$.each($tracers, function (index, item) {
-		    	if(item.methodName == $methodName) {
+		    	if(item.itemName == $itemName) {
 		    		$return = item;
 		    		return false;
 		    	}
@@ -113,6 +79,7 @@
 	    function setTimeRangeEventEvent() {
 			$('#timeRangeInMins').bind('change', function(ev) {
 				var $selectedTimeRange = $(this).val();
+				
 				if(!$selectedTimeRange) {
 					$("#customRangeSelector").css("visibility", "visible");
 					return false;
@@ -123,7 +90,7 @@
 				$("#ajax_box").show();
 
 				
-				var $selectedResolution = $selectedTimeRange;
+				$("#resolutionInSecs").val($selectedTimeRange);
 			    var $selectedTreeNode = $('#classTree').jstree('get_selected').attr('id');
 
 			 	var searchFilter = new Object();
@@ -164,11 +131,12 @@
 	    	
 	    }
 	    
-		function retrievePerformanceNumbers(searchFilter, methodName, $updateChartOnly) {
+		function retrievePerformanceNumbers(searchFilter, tracedItem, $updateChartOnly) {
 			$("#chart").attr('src', "about:blank");
-			
-			var $jsonString = JSON.stringify( searchFilter );
-			if(methodName == null) {
+			$("#stacktrace").css("display", "none");
+			$("#ajax_box").show();
+
+			if(tracedItem == null) {
 				$("#ajax_box").hide();
 				alert("please select a node from the tree!");
 				return false;
@@ -179,27 +147,103 @@
 				alert("please select a valid range");
 				return false;
 			}
+			if(tracedItem == "Memory" || tracedItem == "Database Connections") {
+				// display chart only.
+				$("#scrollbar1").css("display", "none");
+				createChartForm(tracedItem, searchFilter);
+				$("#ajax_box").hide();
+				return false;
+			}
+			else if(tracedItem == "Exception Logging") {
+				$("#scrollbar1").css("display", "block");
+				retrieveExceptionLogs(searchFilter);
+				$("#ajax_box").hide();
+				return false;
+			}
+			else {
+				$("#scrollbar1").css("display", "block");
+				retrieveTracingInfoForJavaAndSQL(searchFilter, tracedItem, $updateChartOnly);
+			}			
+		}
+		
+		function retrieveExceptionLogs(searchFilter) {
+			var $jsonString = JSON.stringify( searchFilter );
+		    $('#statsGrid').html("");
+		    $.ajax(
+	            {
+	              url:"json/retrieveExceptionLogs", 
+	              type: "POST",  
+	              contentType: "application/json; charset=utf-8",
+	              data:  $jsonString,
+	              complete: callback, 
+	            } ); 
+			function callback(jsonResponse) {
+				displayExceptionLogs(searchFilter, jsonResponse);
+				$("#ajax_box").hide();
+			}
+		}
+		
+		function displayExceptionLogs(searchFilter, jsonResponse)  {
+	  		var $jsonArray = jQuery.parseJSON(jsonResponse.responseText);
+	  		var $itemArray = [];
+	  		if($jsonArray.length == 0) {
+	  			$('#statsGrid2').html("");
+	  			$(".scrollbar").css("display", "none");
+	  			return false;
+	  		}
+	  		$.each($jsonArray, function (index, value) {
+				var $arr = [];
+				$arr.push("<a class='simple_anchor' onclick='displayStacktrace(\"" + escape(value.stacktrace) +  "\")'>" + value.exceptionMessage + "</a>");
+				$arr.push(value.count);
+			    $itemArray.push($arr);
+			});   
+
+	  		$('#statsGrid2')
+			.TidyTable({
+				enableCheckbox : false,
+				enableMenu     : false
+			},
+			{
+				columnTitles : ['Exception Message','Count'],
+				columnValues : $itemArray
+		       
+			});
+							
+			$(".scrollbar").css("display", "block");
+			$('#scrollbar1').tinyscrollbar();
+		}
+		
+		
+		function displayStacktrace(stacktrace) {
+			var trace = unescape(stacktrace);
+			trace = trace.replace(/\n/g, "<br />");
+			trace = trace.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+			$("#stacktrace").css("display", "block");
+			$("#stacktrace").html(trace);
+		}
+		
+		function retrieveTracingInfoForJavaAndSQL(searchFilter, tracedItem, $updateChartOnly) {
+			var $jsonString = JSON.stringify( searchFilter );	
 		    $.ajax(
 		            {
-		              url:"json/methodTracingInfo/" + methodName, 
+		              url:"json/retrieveTracingInfo/" + tracedItem, 
 		              type: "POST",  
 		              contentType: "application/json; charset=utf-8",
 		              data:  $jsonString,
 		              complete: callback, 
 		            } ); 
 			function callback(jsonResponse) {
-				updateDataSet(searchFilter, methodName, jsonResponse, $updateChartOnly);
+				updateDataSet(searchFilter, tracedItem, jsonResponse, $updateChartOnly);
 			}
-
-			
 		}
 		
-		function updateDataSet(searchFilter, methodName, jsonResponse, $updateChartOnly) {
+		function updateDataSet(searchFilter, tracedItem, jsonResponse, $updateChartOnly) {
 		    $("#ajax_box").hide();
-		    
+		    $('#statsGrid2').html("");
 	  		var $jsonArray = jQuery.parseJSON(jsonResponse.responseText);
 	  		
-	  		if($jsonArray.tracersGrouped.length == 0 ) {
+	  		if(($jsonArray.monitoredItemTracersGrouped == null || $jsonArray.monitoredItemTracersGrouped.length == 0)
+	  				&& ( $jsonArray.QueryTracersGrouped == null || $jsonArray.QueryTracersGrouped.length == 0 )) {
 	  			$('#statsGrid').html("");
 	  			$(".scrollbar").css("display", "none");
 	  			return;
@@ -207,10 +251,24 @@
 	  		
 	  		if(!$updateChartOnly) {
 	  			var $groupedArray = [];
+		  		var $performanceStats = [];
 		  		
-				$.each($jsonArray.tracersGrouped, function (index, value) {
+		  		if($jsonArray.monitoredItemTracersGrouped != null) {
+		  			$performanceStats = $jsonArray.monitoredItemTracersGrouped;
+		  		}
+		  		else if($jsonArray.queryTracersGrouped != null ) {
+		  			$performanceStats = $jsonArray.queryTracersGrouped;		  			
+		  		}
+		  		
+				$.each($performanceStats, function (index, value) {
 					var $itemArray = [];
-				    $itemArray.push(value.methodName);
+					
+				    if(value.itemName) {
+				    	$itemArray.push(value.itemName);
+				    }
+				    if(value.queryText) {
+				    	$itemArray.push(value.queryText);
+				    }
 				    $itemArray.push(parseFloat(value.average).toFixed(2));
 				    $itemArray.push(value.max);
 				    $itemArray.push(value.min);
@@ -223,7 +281,7 @@
 					enableMenu     : false
 				},
 				{
-					columnTitles : ['Method Name','Response<br/>Time (ms)','Max','Min','Count'],
+					columnTitles : ['Monitored Item','Response<br/>Time (ms)','Max','Min','Count'],
 					columnValues : $groupedArray
 			       
 				});
@@ -234,8 +292,12 @@
 				$('#scrollbar1').tinyscrollbar();
 	  		}
 	  		
-	  		var $chartForm = $('#chartForm');
-	  		var $methodSignature = $("<input>").attr("type", "hidden").attr("name", "methodSignature").val(methodName);
+	  		createChartForm(tracedItem, searchFilter);
+		}
+		
+		function createChartForm(tracedItem, searchFilter) {
+			var $chartForm = $('#chartForm');
+	  		var $methodSignature = $("<input>").attr("type", "hidden").attr("name", "monitoredItem").val(tracedItem);
 	  		var $timeRangeInMins = $("<input>").attr("type", "hidden").attr("name", "timeRangeInMins").val(searchFilter.timeRangeInMins);
 	  		var $fromRange = $("<input>").attr("type", "hidden").attr("name", "fromRange").val(searchFilter.fromRange);
 	  		var $toRange = $("<input>").attr("type", "hidden").attr("name", "toRange").val(searchFilter.toRange);
@@ -260,13 +322,12 @@
     	  		$chartForm.append($searchedItems);
 	    	}
 	    	
-	    	
 	    	$chartForm.submit();
 	    	$chartForm.html('');
 		}
 		
 		function updateChartOnCheckBoxChange() {
-			$('.tidy_table :checkbox').change(function() {
+			$('.tidy_table :checkbox').click(function() {
 				var $checkedItems;
 				if(this.value == "all") {
 					$checkedItems = $('.tidy_table :checkbox').map(function () {
@@ -279,77 +340,212 @@
 						 return this.value;
 						}).get();
 				}
-					 
-				var $tracedItem = $checkedItems[0];
-				$checkedItems.splice(0, 1); // remove first element.
+				if($checkedItems.length == 0) {
+					$tracedItem = $('#classTree').jstree('get_selected').attr('id');
+				}
+				else {
+					var $tracedItem = $checkedItems[0];
+					$checkedItems.splice(0, 1); // remove first element.
+				}
+				
 				handlePerformanceStatsRetrieval($tracedItem, $checkedItems, true);
 			});
 			
 		}
+		
+		function createNodeElement(name, anchor, prefix) {
+			
+			var li = $(document.createElement('li'));
+			li.attr('id', name);
+			var $img = $(document.createElement('img'));
+			$img.attr('src', 'images/folder.png');
+			$img.attr('style', 'margin-right: 5px;');
+			li.append($img);
+			var nodeText = "";
+			if(anchor) {
+				nodeText += '<a href="#">' + name + '</a>';
+			}
+			else {
+				nodeText = "<span>" + name + "</span>";
+			}
+			
+			li.append(nodeText);
+			return li;
+		}
+		
+		function createMethodsTree(ul, array) {
+			$.each(array, function(index, item) {
+			    var li = $(document.createElement('li'));
+				li.attr("id", item.fullName);
+				var $img = $(document.createElement('img'));
+				var $isClass = true;
+				$.each(item.subItems, function(i, value) {
+					if(value.subItems.length > 0) {
+						$isClass = false;
+						return;
+					}
+				});
+				 if(item.subItems.length == 0) {
+					$img.attr('src', 'images/method.png');
+				}
+				else if(item.subItems[0].itemName.indexOf("()") >= 0) {
+					$img.attr('src', 'images/class.png');
+				}
+				
+				else {
+					$img.attr('src', 'images/folder.png');
+				}
+				$img.attr('style', 'margin-right: 5px;');
+				li.append($img);
+				li.append('<a href="#"><span style="display:none">' + item.fullName + '</span>' + item.itemName + '</a>');
+				if(item.subItems.length > 0 ) {
+				    var ul2 = $('<ul>').appendTo(li);
+					createMethodsTree(ul2, item.subItems);
+	 			}
+				ul.append(li);
+			});
+			
+		}
+		
+		function createSQLTree(ul, array) {
+			
+			var $insertLi = createNodeElement("INSERT", true, "SQL");
+			var $selectLi = createNodeElement("SELECT", true, "SQL");
+			var $updateLi = createNodeElement("UPDATE", true, "SQL");
+			var $deleteLi = createNodeElement("DELETE", true, "SQL");
+			var $otherLi = createNodeElement("OTHER", true);
+			var $insert = $('<ul>').appendTo($insertLi);
+			var $select = $('<ul>').appendTo($selectLi);
+			var $update = $('<ul>').appendTo($deleteLi);
+			var $delete = $('<ul>').appendTo($deleteLi);
+			var $other = $('<ul>').appendTo($otherLi);
+	
+			$.each(array, function(index, item) {
+			    var li = $(document.createElement('li'));
+				li.attr("id", item);
+				var $img = $(document.createElement('img'));
+				$img.attr('src', 'images/sql.png');
+				$img.attr('style', 'margin-right: 5px;');
+				li.append($img);
+				li.append('<a href="#" title="' + item + '"><span style="display:none">' + item + '</span>' + item.substring(0, 30) + '...</a>');
+				
+				if(/^SELECT/i.test(item)) { // if start with SELECT ( i for case insensitive)
+					$select.append(li);
+				}
+				else if(/^UPDATE/i.test(item)) { 
+					$update.append(li);
+				}
+				else if(/^DELETE/i.test(item)) {
+					$delete.append(li);
+				}
+				else if(/^INSERT/i.test(item)) {
+					$insert.append(li);
+				}
+				else {
+					$other.append(li);
+				}
+				
+			});
+			ul.append($insertLi);
+			ul.append($selectLi);
+			ul.append($updateLi);
+			ul.append($deleteLi);
+			ul.append($otherLi);
+		}
+		
+		function retrieveTracedItems() {
+			var height = $(".center_content").css("height");
+			$("#ajax_box").css("height", height);
+			$("#ajax_box").show();
+			
+			
+			$.ajax
+			(
+				{
+				  url:"json/getMonitoredItems", 
+				  type: "GET",  
+				  data: "",
+				  complete: function(jsonResponse) {
+						var objectArray = jQuery.parseJSON(jsonResponse.responseText);
+						var tracedMethods = objectArray['tracedMethods'];
+						var tracedQueries = objectArray['tracedQueries'];
+						var ul = $(document.createElement('ul'));
+						
+						var javaLi = createNodeElement("java", false);
+						var javaUl = $('<ul>').appendTo(javaLi);
+						createMethodsTree(javaUl, tracedMethods);
+						ul.append(javaLi);
+						
+						var sqlLi = createNodeElement("SQL", true);
+						var sqlUl = $('<ul>').appendTo(sqlLi);
+						createSQLTree(sqlUl, tracedQueries);   
+						ul.append(sqlLi);
+					
+						var memoryLi = createNodeElement("Memory", true);
+						ul.append(memoryLi);
+						
+						var dbconnectionLi = createNodeElement("Database Connections", true);
+						ul.append(dbconnectionLi);
+						
+						var errorLi = createNodeElement("Exception Logging", true);
+						ul.append(errorLi);
+						
+						createJsTree(ul);
+						$("#ajax_box").hide();
+				   }
+				} 
+			);
+		}
+		
+		
+		function createJsTree(ul) {
+			
+			$("#classTree").html(ul);
+			$("#classTree")
+				.jstree({"search" : {"case_insensitive" : true}, "plugins" : ["themes","html_data","ui", "search"] })
+				// 1) if using the UI plugin bind to select_node
+				.bind("select_node.jstree", function (event, data) { 
+					var $tracedItem = data.rslt.obj.attr("id");
+					handlePerformanceStatsRetrieval($tracedItem);
+   
+				})
+				.bind("search.jstree", function (e, data) {
+					$('#classTree').jstree('close_all');
+					if(data.rslt.nodes.length == 0) {
+						alert("No results found! please redefine your search..");
+						return false;
+					}
+					var $searchedItems = [];
+					$.each(data.rslt.nodes, function(index, item) {
+						var $nodeName = item.parentElement.id;
+						var $exists = false;
+						$.each($searchedItems, function(i, value) {
+							if ($nodeName.indexOf(value) >= 0) {
+								$exists = true;
+								return true; // exit for loop.
+							}
+						});
+						if(!$exists) {
+							$searchedItems.push($nodeName);
+						}
+					});
+					var $tracedItem = $searchedItems[0];
+					$searchedItems.splice(0, 1); // remove first element.
+					handlePerformanceStatsRetrieval($tracedItem, $searchedItems);
+				})
+				// 2) if not using the UI plugin - the Anchor tags work as expected
+				//    so if the anchor has a HREF attirbute - the page will be changed
+				//    you can actually prevent the default, etc (normal jquery usage)
+				.delegate("a", "click", function (event, data) { event.preventDefault(); 
+			})
+		}
+		
         $(document).ready(function () {
         		setTimeRangeEventEvent();
         		setDateTimePickerEvent();
         		setDefaultTextEvent();
         		setSearchEvent();
-        		var height = $(".center_content").css("height");
-				$("#ajax_box").css("height", height);
-				$("#ajax_box").show();
-				
-				$.ajax
-				(
-					{
-					  url:"json/getTracedMethods", 
-					  type: "GET",  
-					  data: "",
-					  complete: function(jsonResponse) {
-					  		$("#ajax_box").hide();
-							var objectArray = jQuery.parseJSON(jsonResponse.responseText);
-							var ul = $(document.createElement('ul'));
-							createList(ul, objectArray);
-							$("#classTree").html(ul);
-							$("#classTree")
-								.jstree({"search" : {"case_insensitive" : true}, "plugins" : ["themes","html_data","ui", "search"] })
-								// 1) if using the UI plugin bind to select_node
-								.bind("select_node.jstree", function (event, data) { 
-									var $tracedItem = data.rslt.obj.attr("id");
-									handlePerformanceStatsRetrieval($tracedItem);
-	               
-								})
-								.bind("search.jstree", function (e, data) {
-									$('#classTree').jstree('close_all');
-									if(data.rslt.nodes.length == 0) {
-										alert("No results found! please redefine your search..");
-										return false;
-									}
-									var $searchedItems = [];
-									$.each(data.rslt.nodes, function(index, item) {
-										var $nodeName = item.parentElement.id;
-										var $exists = false;
-										$.each($searchedItems, function(i, value) {
-											if ($nodeName.indexOf(value) >= 0) {
-												$exists = true;
-												return true; // exit for loop.
-											}
-										});
-										if(!$exists) {
-											$searchedItems.push($nodeName);
-										}
-									});
-									var $tracedItem = $searchedItems[0];
-									$searchedItems.splice(0, 1); // remove first element.
-									handlePerformanceStatsRetrieval($tracedItem, $searchedItems);
-								})
-								// 2) if not using the UI plugin - the Anchor tags work as expected
-								//    so if the anchor has a HREF attirbute - the page will be changed
-								//    you can actually prevent the default, etc (normal jquery usage)
-								.delegate("a", "click", function (event, data) { event.preventDefault(); 
-							})
-						
-				           
-						}
-					} 
-				);
-	
+				retrieveTracedItems();
 		});
 		
 	</script>
@@ -408,9 +604,15 @@
 						 <div class="overview" id="statsGrid"  align="center">
 						 	
 						 </div>
+						 <div class="overview" id="statsGrid2"  align="center" style="width:99%">
+						 	
+						 </div>
 					</div>
 				</div>	
 				<div style="height:20px">&nbsp</div>
+				<div id="stacktrace" style="max-width:980px" >
+					
+	        	</div>
 	        	<div id="statsChart" style="width:99%; height:600px" >
 					<iframe id="chart" style="border:none;" width="100%" height="550px" marginheight="0" marginwidth="0" frameborder="0">
 					  <p>Your browser does not support iframes.</p>

@@ -3,7 +3,6 @@ table.tidy_table {
 	background-color: #FFFFFF;
 	border-collapse: collapse;
 	border: 1px solid #CCCCCC;
-	cursor: pointer;
 	white-space: nowrap
 }
 
@@ -38,10 +37,6 @@ table.tidy_table th,table.tidy_table td {
 table.tidy_table td {
 	border-right: 1px solid #EEEEEE;
 	padding: 7px 20px 7px 20px
-}
-
-table.tidy_table th:nth-child(1),table.tidy_table td:nth-child(1) {
-	width: 10px
 }
 
 table.tidy_table td:nth-child(1) {

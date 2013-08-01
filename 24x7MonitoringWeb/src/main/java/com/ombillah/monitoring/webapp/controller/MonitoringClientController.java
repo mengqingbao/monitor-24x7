@@ -4,14 +4,18 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
@@ -29,9 +33,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.ombillah.monitoring.domain.ChartProperties;
+import com.ombillah.monitoring.domain.ExceptionLogger;
+import com.ombillah.monitoring.domain.ItemTracers;
 import com.ombillah.monitoring.domain.MethodSignature;
-import com.ombillah.monitoring.domain.MethodTracer;
-import com.ombillah.monitoring.domain.MethodTracers;
+import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.MonitoredItem;
 import com.ombillah.monitoring.domain.SearchFilter;
 import com.ombillah.monitoring.domain.TracingFilter;
@@ -56,42 +61,56 @@ public class MonitoringClientController {
 	@Autowired
 	private ChartingService chartingService;
 
-	@RequestMapping(value = "/json/getTracedMethods", method = RequestMethod.GET, produces = "application/json")
+	@RequestMapping(value = "/json/getMonitoredItems", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
-	public Collection<MonitoredItem> getTracedMethods() {
-		boolean t = true;
+	public Map<String, Object> getMonitoredItems() {
+		
+		Map<String, Object> map = new HashMap<String, Object>();
+		Collection<MonitoredItem> tracedMethods = getTracedMethods();
+		List<String> tracedQueries = getTracedQueries();
+		
+		map.put("tracedMethods", tracedMethods);
+		map.put("tracedQueries", tracedQueries);
+		
+		return map;
+
+	}
+
+	private Collection<MonitoredItem> getTracedMethods() {
 		List<MethodSignature> methodSignatures = collectorService
 				.retrieveMethodSignatures();
 
 		MonitoredItem root = new MonitoredItem("");
 		for (MethodSignature signature : methodSignatures) {
-			root.Push(signature.getMethodName().split("\\."), 0);
+			root.Push(signature.getItemName().split("\\."), 0);
 		}
 		Collection<MonitoredItem> monitoredItems = root.getSubItems();
-
 		return monitoredItems;
-
 	}
 
-	@RequestMapping(value = "/json/methodTracingInfo/{methodSignature:.+}", method = RequestMethod.POST, produces = "application/json")
+	private List<String> getTracedQueries() {
+		List<String> sqlQueries = collectorService.retrieveSqlQueries();
+		return sqlQueries;
+	}
+	
+	@RequestMapping(value = "/json/retrieveTracingInfo/{tracedItem:.+}", method = RequestMethod.POST, produces = "application/json")
 	@ResponseBody
-	public MethodTracers getMonitoringInformation(
-			@PathVariable("methodSignature") String methodSignature,
+	public ItemTracers getMonitoringInformation(
+			@PathVariable("tracedItem") String tracedItem,
 			@RequestBody TracingFilter tracingFilter) throws ParseException {
 
 		Integer timeRangeinMins = tracingFilter.getTimeRangeInMins();
 		String fromRange = tracingFilter.getFromRange();
 		String toRange = tracingFilter.getToRange();
 
-		SearchFilter searchFilter = createSearchFilter(methodSignature,
+	
+		SearchFilter searchFilter = createSearchFilter(tracedItem,
 				timeRangeinMins, tracingFilter.getSearchedItems(), fromRange,
 				toRange);
-
-		List<MethodTracer> methodTracersGrouped = collectorService
-				.retrieveMethodStatisticsGroupedByMethodName(searchFilter);
-
-		MethodTracers result = new MethodTracers();
-		result.setTracersGrouped(methodTracersGrouped);
+		
+		ItemTracers result = new ItemTracers();
+		List<MonitoredItemTracer> monitoredItemTracersGrouped = collectorService.retrieveItemStatisticsGroupedByMonitoredItem(searchFilter);
+		result.setMonitoredItemTracersGrouped(monitoredItemTracersGrouped);
 
 		return result;
 	}
@@ -138,26 +157,52 @@ public class MonitoringClientController {
 		return searchFilter;
 	}
 
+	@RequestMapping(value = "/json/retrieveExceptionLogs", method = RequestMethod.POST, produces = "application/json")
+	@ResponseBody
+	public List<ExceptionLogger> retrieveExceptionLogs(
+			@RequestBody TracingFilter tracingFilter) throws ParseException {
+
+		Integer timeRangeinMins = tracingFilter.getTimeRangeInMins();
+		String fromRange = tracingFilter.getFromRange();
+		String toRange = tracingFilter.getToRange();
+
+	
+		SearchFilter searchFilter = createSearchFilter("",
+				timeRangeinMins, new ArrayList<String>(), fromRange,
+				toRange);
+		
+		List<ExceptionLogger> exceptionLogger = collectorService.retrieveExceptionLoggers(searchFilter);
+		return exceptionLogger;
+	}
 	
 	@RequestMapping(value="getchart.do")
-	public void getChart(HttpServletResponse response, String methodSignature, Integer timeRangeInMins, 
+	public void getChart(HttpServletResponse response, String monitoredItem, Integer timeRangeInMins, 
 			String fromRange, String toRange,
 			String[] searchedItems) throws ParseException, IOException {
-		
-		//String [] searchedItemsArr = searchItems.split(",");
+
 		PrintWriter writer = response.getWriter();
-		SearchFilter searchFilter = createSearchFilter(methodSignature,
-				timeRangeInMins, new LinkedList<String>(Arrays.asList(searchedItems)), fromRange, toRange);
+		SearchFilter searchFilter = createSearchFilter(monitoredItem,
+				timeRangeInMins, new LinkedList<String>(Arrays.asList(searchedItems)), 
+				fromRange, toRange);
 
 		ChartProperties properties = new ChartProperties();
-		properties.setTitle("Average Response Time");
+		String yLabel = "Average Response Time (ms)";
+		String title = "Response Time";
+		if(StringUtils.equals(monitoredItem, "Memory")) {
+			yLabel = "Memory Size (MB)";
+			title = "Memory Utilization";
+		}
+		else if(StringUtils.equals(monitoredItem, "Database Connections")) {
+			yLabel = "Active DB Connections";
+			title = "Active Database Connections";
+		}
+		properties.setTitle(title);
 		properties.setxAxisLabel("Date");
-		properties.setyAxisLabel("Response Time");
+		properties.setyAxisLabel(yLabel);
 
 	    writer.println("<html>");
 		writer.println("<body>");
-		JFreeChart chart = chartingService.generateChart(properties,
-				searchFilter);
+		JFreeChart chart = chartingService.generateChart(properties, searchFilter);
 		int width = 900;
 		int height = 500;
 		

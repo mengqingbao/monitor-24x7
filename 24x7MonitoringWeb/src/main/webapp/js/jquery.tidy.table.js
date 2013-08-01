@@ -128,8 +128,7 @@
 				var val = vals[j][k];
 
 				var col = $('<td></td>')
-					.append(val)
-					.attr('title', val);
+					.append(val);
 				row.append(col);
 
 				// post-process table column HTML object
