@@ -14,9 +14,7 @@ import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 
 import com.google.inject.name.Named;
 import com.ombillah.monitoring.domain.CollectedData;
-import com.ombillah.monitoring.domain.MethodSignature;
-import com.ombillah.monitoring.domain.MethodTracer;
-import com.ombillah.monitoring.domain.QueryTracer;
+import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SqlQuery;
 import com.ombillah.monitoring.service.CollectorService;
 
@@ -34,7 +32,7 @@ public class SQLQueryExecutionTimeCollector implements Runnable {
 		try {
 			Map<String, List<Long>> tracers = collectedData.getTracer();
 			
-			List<QueryTracer> list = new CopyOnWriteArrayList<QueryTracer>();
+			List<MonitoredItemTracer> list = new CopyOnWriteArrayList<MonitoredItemTracer>();
 			Set<SqlQuery> sqlQueries = new HashSet<SqlQuery>();
 			Date timestamp = new Date();
 
@@ -52,7 +50,7 @@ public class SQLQueryExecutionTimeCollector implements Runnable {
 				double min = stats.getMin();
 				double count = execTimes.size();
 				
-				QueryTracer tracer = new QueryTracer(query, average, max, min, count, timestamp);
+				MonitoredItemTracer tracer = new MonitoredItemTracer(query, "SQL", average, max, min, count, timestamp);
 				list.add(tracer);
 				
 				sqlQueries.add(new SqlQuery(query));
@@ -61,7 +59,7 @@ public class SQLQueryExecutionTimeCollector implements Runnable {
 			if(tracers != null && !tracers.isEmpty()) {
 				List<SqlQuery> currentList = collectorService.retrieveSqlQueries();
 				sqlQueries.addAll(currentList);
-				collectorService.saveQueryTracingStatistics(list);
+				collectorService.saveMonitoredItemTracingStatistics(list);
 				collectorService.saveSqlQueries(new ArrayList<SqlQuery>(sqlQueries));
 				System.out.println("inserted " + list.size() + " items into Query Tracer table at " + timestamp);
 		    	tracers.clear();

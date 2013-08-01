@@ -1,11 +1,10 @@
 package com.ombillah.monitoring.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import com.ombillah.monitoring.domain.ExceptionLogger;
 import com.ombillah.monitoring.domain.MethodSignature;
-import com.ombillah.monitoring.domain.MethodTracer;
-import com.ombillah.monitoring.domain.QueryTracer;
+import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SqlQuery;
 
 /**
@@ -19,11 +18,12 @@ public interface CollectorService {
 	
 	public void saveMethodSignatures(List<MethodSignature> arrayList);
 	
-	public void saveMethodTracingStatistics(List<MethodTracer> methodTracers);
+	public void saveMonitoredItemTracingStatistics(List<MonitoredItemTracer> MonitoredItemTracers);
 
 	public List<SqlQuery> retrieveSqlQueries();
 
-	public void saveQueryTracingStatistics(List<QueryTracer> list);
-
 	public void saveSqlQueries(List<SqlQuery> arrayList);
+	
+	public void saveException(ExceptionLogger logger);
+
 }

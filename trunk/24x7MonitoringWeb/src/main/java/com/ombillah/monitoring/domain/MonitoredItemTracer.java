@@ -2,66 +2,29 @@ package com.ombillah.monitoring.domain;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
- * Domain class to represent a query tracer.
+ * Domain class to represent a method tracer.
  * 
  * @author Oussama M Billah
  * 
  */
-@Entity
-@Table(name="QUERY_TRACER")
-public class QueryTracer extends BaseDomain {
+public class MonitoredItemTracer extends BaseDomain {
 
 	private static final long serialVersionUID = 1L;
-	
-	@Id
-	@GeneratedValue
+
 	private Long id;
-	
-	@Column(name="QUERY_TEXT")
-	private String queryText;
-	
-	@Column
-	private double average;
-	
-	@Column
-	private double max;
-	
-	@Column
-	private double min;
-	
-	@Column
-	private double count;
-	
-	@Column(name="CREATION_DATE")
+	private String itemName;
+	private String type;
+	private Double average;
+	private Double max;
+	private Double min;
+	private Long count;
 	private Date creationDate;
-
-	public QueryTracer() {
-		// default constructor();
-	}
-	
-	public QueryTracer(String queryText, double average, double max,
-			double min, double count, Date creationDate) {
-
-		this.setQueryText(queryText);
-		this.average = average;
-		this.max = max;
-		this.min = min;
-		this.count = count;
-		this.creationDate = creationDate;
-	}
-	
 
 	public Long getId() {
 		return id;
@@ -71,12 +34,24 @@ public class QueryTracer extends BaseDomain {
 		this.id = id;
 	}
 
-	public String getQueryText() {
-		return queryText;
+	public String getItemName() {
+		return itemName;
 	}
 
-	public void setQueryText(String queryText) {
-		this.queryText = queryText;
+	public void setItemName(String itemName) {
+		this.itemName = itemName;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public void setAverage(Double average) {
+		this.average = average;
 	}
 
 	public double getAverage() {
@@ -87,27 +62,27 @@ public class QueryTracer extends BaseDomain {
 		this.average = average;
 	}
 
-	public double getMax() {
+	public Double getMax() {
 		return max;
 	}
 
-	public void setMax(double max) {
+	public void setMax(Double max) {
 		this.max = max;
 	}
 
-	public double getMin() {
+	public Double getMin() {
 		return min;
 	}
 
-	public void setMin(double min) {
+	public void setMin(Double min) {
 		this.min = min;
 	}
 
-	public double getCount() {
+	public Long getCount() {
 		return count;
 	}
 
-	public void setCount(double count) {
+	public void setCount(Long count) {
 		this.count = count;
 	}
 
@@ -121,7 +96,7 @@ public class QueryTracer extends BaseDomain {
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof QueryTracer)) {
+		if (!(object instanceof MonitoredItemTracer)) {
 			return false;
 		}
 

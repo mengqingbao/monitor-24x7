@@ -2,9 +2,10 @@
 	<aspects>
 		<aspect  name="com.ombillah.monitoring.aspectj.MethodExecutionTimeAspect"/>
 		<aspect  name="com.ombillah.monitoring.aspectj.MySQLQueriesAspect"/>
+		<aspect  name="com.ombillah.monitoring.aspectj.ExceptionHandlerAspect"/>
+		<aspect  name="com.ombillah.monitoring.aspectj.DatabaseConnectionsAspect"/>
+		<aspect  name="com.ombillah.monitoring.aspectj.SessionCountTrackingAspect"/>
 	</aspects>
-	
-	<weaver>
-       <exclude within="com.ombillah.monitoring..*" />
-   </weaver>
+
+   
 </aspectj>

@@ -2,9 +2,9 @@ package com.ombillah.monitoring.dao;
 
 import java.util.List;
 
+import com.ombillah.monitoring.domain.ExceptionLogger;
 import com.ombillah.monitoring.domain.MethodSignature;
-import com.ombillah.monitoring.domain.MethodTracer;
-import com.ombillah.monitoring.domain.QueryTracer;
+import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SqlQuery;
 
 /**
@@ -18,11 +18,11 @@ public interface CollectorDAO {
 	
 	public void saveMethodSignatures(List<MethodSignature> methodSignatures);
 	
-	public void saveMethodTracingStatistics(List<MethodTracer> methodTracers);
+	public void saveMonitoredItemTracingStatistics(List<MonitoredItemTracer> MonitoredItemTracers);
 
 	public List<SqlQuery> retrieveSqlQueries();
 
-	public void saveQueryTracingStatistics(List<QueryTracer> tracers);
-
 	public void saveSqlQueries(List<SqlQuery> queries);
+
+	public void saveException(ExceptionLogger logger);
 }

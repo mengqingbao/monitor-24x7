@@ -5,16 +5,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.ombillah.monitoring.bootstrap.Bootstrap;
 import com.ombillah.monitoring.domain.CollectedData;
-import com.ombillah.monitoring.jobs.MethodExecutionTimeCollector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 
@@ -29,16 +25,8 @@ public aspect MethodExecutionTimeAspect {
 	}
 
 	private void bootstrap() {
-		try {
-			Injector injector = Bootstrap.init();
-			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-			Runnable collectorJob = injector.getInstance(MethodExecutionTimeCollector.class);
-			scheduler.scheduleAtFixedRate(collectorJob, 30, 30, TimeUnit.SECONDS);
-			collectedData = injector.getInstance(Key.get(CollectedData.class, Names.named("MethodCollector")));
-
-		} catch (Throwable ex) {
-			// do nothing.
-		}
+		Injector injector = Bootstrap.init();
+		collectedData = injector.getInstance(Key.get(CollectedData.class, Names.named("MethodCollector")));
 	}
 	
 	pointcut publicOperation() : execution(public * com.ombillah.ecom4j..*(..));

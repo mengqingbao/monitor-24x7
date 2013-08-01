@@ -6,11 +6,15 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.persistence.EntityManager;
 
+import org.hibernate.ejb.HibernateEntityManagerFactory;
+import org.hibernate.internal.SessionFactoryImpl;
+import org.hibernate.service.jdbc.connections.internal.DatasourceConnectionProviderImpl;
+
 import com.google.inject.persist.Transactional;
 import com.ombillah.monitoring.dao.CollectorDAO;
+import com.ombillah.monitoring.domain.ExceptionLogger;
 import com.ombillah.monitoring.domain.MethodSignature;
-import com.ombillah.monitoring.domain.MethodTracer;
-import com.ombillah.monitoring.domain.QueryTracer;
+import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SqlQuery;
 
 
@@ -34,7 +38,6 @@ public class CollectorDAOImpl implements CollectorDAO {
 	
 	@Transactional
 	public void saveMethodSignatures(List<MethodSignature> methodSignatures) {
-		
 		for(MethodSignature signature : methodSignatures) {
 			MethodSignature result = entityManager.get().find(MethodSignature.class, signature.getMethodName());
 			if(result == null) {
@@ -45,11 +48,10 @@ public class CollectorDAOImpl implements CollectorDAO {
 	}
 	
 	@Transactional
-	public void saveMethodTracingStatistics(List<MethodTracer> methodTracers) {
-		for(MethodTracer tracer : methodTracers) {
+	public void saveMonitoredItemTracingStatistics(List<MonitoredItemTracer> monitoredItemTracers) {
+		for(MonitoredItemTracer tracer : monitoredItemTracers) {
 			entityManager.get().persist(tracer);
 		}
-		
 	}
 
 	@Transactional
@@ -61,13 +63,6 @@ public class CollectorDAOImpl implements CollectorDAO {
 	}
 
 	@Transactional
-	public void saveQueryTracingStatistics(List<QueryTracer> tracers) {
-		for(QueryTracer tracer : tracers) {
-			entityManager.get().persist(tracer);
-		}
-	}
-
-	@Transactional
 	public void saveSqlQueries(List<SqlQuery> queries) {
 		for(SqlQuery query : queries) {
 			SqlQuery result = entityManager.get().find(SqlQuery.class, query.getSqlQuery());
@@ -76,6 +71,11 @@ public class CollectorDAOImpl implements CollectorDAO {
 			}	
 		}
 		
+	}
+
+	@Transactional
+	public void saveException(ExceptionLogger logger) {
+		entityManager.get().persist(logger);
 	}
 
 }

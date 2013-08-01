@@ -14,22 +14,22 @@ public class MethodSignature extends BaseDomain {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private String methodName;
+	private String itemName;
 	
 	public MethodSignature() {
 		// default constructor.
 	}
 	
-	public MethodSignature(String methodName) {
-		this.methodName = methodName;
+	public MethodSignature(String itemName) {
+		this.itemName = itemName;
 	}
 	
-	public String getMethodName() {
-		return methodName;
+	public String getItemName() {
+		return itemName;
 	}
 
-	public void setMethodName(String methodName) {
-		this.methodName = methodName;
+	public void setMethodName(String itemName) {
+		this.itemName = itemName;
 	}
 
 

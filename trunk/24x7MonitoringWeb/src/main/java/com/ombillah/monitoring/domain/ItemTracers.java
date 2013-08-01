@@ -1,50 +1,29 @@
 package com.ombillah.monitoring.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import java.util.List;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-/**
- * Domain object for method signatures table.
- * @author Oussama M Billah
- *
- */
-@Entity
-@Table(name="METHOD_SIGNATURES")
-public class MethodSignature extends BaseDomain {
-	
+public class ItemTracers extends BaseDomain {
+
 	private static final long serialVersionUID = 1L;
+	private List<MonitoredItemTracer> monitoredItemTracersGrouped;
 	
-	@Id
-	@Column(name="METHOD_SIGNATURE")
-	private String methodName;
-	
-	public MethodSignature() {
-		// default constructor.
-	}
-	
-	public MethodSignature(String methodName) {
-		this.methodName = methodName;
-	}
-	
-	public String getMethodName() {
-		return methodName;
+
+	public List<MonitoredItemTracer> getMonitoredItemTracersGrouped() {
+		return monitoredItemTracersGrouped;
 	}
 
-	public void setMethodName(String methodName) {
-		this.methodName = methodName;
+	public void setMonitoredItemTracersGrouped(List<MonitoredItemTracer>monitoredItemTracersGrouped) {
+		this.monitoredItemTracersGrouped = monitoredItemTracersGrouped;
 	}
-
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof MethodSignature)) {
+		if (!(object instanceof ItemTracers)) {
 			return false;
 		}
 
@@ -67,6 +46,4 @@ public class MethodSignature extends BaseDomain {
 	public int hashCode() {
 		return HashCodeBuilder.reflectionHashCode(this);
 	}
-
-
 }

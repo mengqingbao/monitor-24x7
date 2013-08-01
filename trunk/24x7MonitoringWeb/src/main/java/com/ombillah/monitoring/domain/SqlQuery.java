@@ -1,39 +1,41 @@
 package com.ombillah.monitoring.domain;
 
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-public class MethodTracers extends BaseDomain {
-
+/**
+ * Domain object for SQL Queries table.
+ * @author Oussama M Billah
+ *
+ */
+public class SqlQuery extends BaseDomain {
+	
 	private static final long serialVersionUID = 1L;
-	private Map<String, List<MethodTracer>> tracersByResolution;
-	private List<MethodTracer> tracersGrouped;
-
-
-	public Map<String, List<MethodTracer>> getTracersByResolution() {
-		return tracersByResolution;
+	
+	private String sqlQuery;
+	
+	public SqlQuery() {
+		// default constructor.
+	}
+	
+	public SqlQuery(String sqlQuery) {
+		this.sqlQuery = sqlQuery;
+	}
+	
+	public String getSqlQuery() {
+		return sqlQuery;
 	}
 
-	public void setTracersByResolution(Map<String, List<MethodTracer>> tracersByResolution) {
-		this.tracersByResolution = tracersByResolution;
+	public void setSqlQuery(String sqlQuery) {
+		this.sqlQuery = sqlQuery;
 	}
 
-	public List<MethodTracer> getTracersGrouped() {
-		return tracersGrouped;
-	}
-
-	public void setTracersGrouped(List<MethodTracer> tracersGrouped) {
-		this.tracersGrouped = tracersGrouped;
-	}
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof MethodTracers)) {
+		if (!(object instanceof SqlQuery)) {
 			return false;
 		}
 
@@ -56,4 +58,6 @@ public class MethodTracers extends BaseDomain {
 	public int hashCode() {
 		return HashCodeBuilder.reflectionHashCode(this);
 	}
+
+
 }

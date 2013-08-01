@@ -2,27 +2,38 @@ package com.ombillah.monitoring.domain;
 
 import java.util.Date;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
- * Domain class to represent a method tracer.
- * 
+ * Domain class for Exception logging information.
  * @author Oussama M Billah
  * 
  */
-public class MethodTracer extends BaseDomain {
+@Entity
+@Table(name="EXCEPTION_LOGGER")
+public class ExceptionLogger extends BaseDomain {
 
 	private static final long serialVersionUID = 1L;
-	
+	@Id
+	@GeneratedValue
 	private Long id;
-	private String methodName;
-	private Double average;
-	private Double max;
-	private Double min;
-	private Long count;
+	
+	@Column(name="EXCEPTION_MESSAGE")
+	private String exceptionMessage;
+
+	@Column(name="STACKTRACE")
+	private String stacktrace;
+	
+	@Column(name="CREATION_DATE")
 	private Date creationDate;
 
 	public Long getId() {
@@ -32,45 +43,21 @@ public class MethodTracer extends BaseDomain {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
-	public String getMethodName() {
-		return methodName;
+
+	public String getExceptionMessage() {
+		return exceptionMessage;
 	}
 
-	public void setMethodName(String methodName) {
-		this.methodName = methodName;
+	public void setExceptionMessage(String exceptionMessage) {
+		this.exceptionMessage = exceptionMessage;
 	}
 
-	public double getAverage() {
-		return average;
+	public String getStacktrace() {
+		return stacktrace;
 	}
 
-	public void setAverage(double average) {
-		this.average = average;
-	}
-
-	public Double getMax() {
-		return max;
-	}
-
-	public void setMax(Double max) {
-		this.max = max;
-	}
-
-	public Double getMin() {
-		return min;
-	}
-
-	public void setMin(Double min) {
-		this.min = min;
-	}
-
-	public Long getCount() {
-		return count;
-	}
-
-	public void setCount(Long count) {
-		this.count = count;
+	public void setStacktrace(String stacktrace) {
+		this.stacktrace = stacktrace;
 	}
 
 	public Date getCreationDate() {
@@ -83,7 +70,7 @@ public class MethodTracer extends BaseDomain {
 
 	@Override
 	public boolean equals(Object object) {
-		if (!(object instanceof MethodTracer)) {
+		if (!(object instanceof ExceptionLogger)) {
 			return false;
 		}
 
