@@ -3,40 +3,33 @@ package com.ombillah.monitoring.jobs;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.inject.Inject;
 
-import com.google.inject.name.Named;
+import com.ombillah.monitoring.domain.DbConnectionTracker;
 import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SessionTracker;
 import com.ombillah.monitoring.service.CollectorService;
 
 public class DatabaseAndSessionStatisticsCollector implements Runnable {
 	
-	
 	@Inject
 	private CollectorService collectorService;
-	
-	@Inject
-	@Named("ActiveConnectionCount")
-	private AtomicLong activeConnectionCount;
-	
+
 	@Inject
 	private SessionTracker sessionTracker;
+	
+	@Inject
+	private DbConnectionTracker connectionTracker;
 	
 	public void run() {
 		
 		try {
-			Long activeCount = activeConnectionCount.get();
+			Integer connectionCount = connectionTracker.getActiveConnectionCountAndClearClosedSessions();
 			Integer sessionCount = sessionTracker.getActiveSessionCountAndClearExpiredSessions();
-			
-			if(activeCount < 0) {
-				activeCount = 0L;
-			}
-			
+	
 	        MonitoredItemTracer activeConnectionCount = new MonitoredItemTracer("ActiveConnectionCount", 
-	        		"ACTIVE_CONNECTION", activeCount, activeCount, activeCount, 1, new Date());
+	        		"ACTIVE_CONNECTION", connectionCount, connectionCount, connectionCount, 1, new Date());
 	        
 	        MonitoredItemTracer activeSessionCount = new MonitoredItemTracer("HttpSessionCount", 
 	        		"ACTIVE_SESSION", sessionCount, sessionCount, sessionCount, 1, new Date());

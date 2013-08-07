@@ -147,7 +147,7 @@
 				alert("please select a valid range");
 				return false;
 			}
-			if(tracedItem == "Memory" || tracedItem == "Database Connections") {
+			if(tracedItem == "Memory" || tracedItem == "Database Connections" || tracedItem == "Active Sessions" ) {
 				// display chart only.
 				$("#scrollbar1").css("display", "none");
 				createChartForm(tracedItem, searchFilter);
@@ -453,6 +453,20 @@
 			ul.append($otherLi);
 		}
 		
+		function createHttpRequestTree(ul, array) {
+			$.each(array, function(index, item) {
+			    var li = $(document.createElement('li'));
+				li.attr("id", item);
+				var $img = $(document.createElement('img'));
+				$img.attr('src', 'images/request.png');
+				$img.attr('style', 'margin-right: 5px;');
+				li.append($img);
+				li.append('<a href="#" title="' + item + '"><span style="display:none">' + item + '</span>' + item.substring(0, 30) + '...</a>');
+				ul.append(li);
+				
+			});
+		}
+		
 		function retrieveTracedItems() {
 			var height = $(".center_content").css("height");
 			$("#ajax_box").css("height", height);
@@ -469,6 +483,8 @@
 						var objectArray = jQuery.parseJSON(jsonResponse.responseText);
 						var tracedMethods = objectArray['tracedMethods'];
 						var tracedQueries = objectArray['tracedQueries'];
+						var tracedRequestUrls = objectArray['HttpRequestUrls'];
+						
 						var ul = $(document.createElement('ul'));
 						
 						var javaLi = createNodeElement("java", false);
@@ -481,10 +497,18 @@
 						createSQLTree(sqlUl, tracedQueries);   
 						ul.append(sqlLi);
 					
+						var httpRequestLi = createNodeElement("HTTP Requests", true);
+						var requestUl = $('<ul>').appendTo(httpRequestLi);
+						createHttpRequestTree(requestUl, tracedRequestUrls); 
+						ul.append(httpRequestLi);	
+					
 						var memoryLi = createNodeElement("Memory", true);
 						ul.append(memoryLi);
 						
 						var dbconnectionLi = createNodeElement("Database Connections", true);
+						ul.append(dbconnectionLi);
+						
+						var dbconnectionLi = createNodeElement("Active Sessions", true);
 						ul.append(dbconnectionLi);
 						
 						var errorLi = createNodeElement("Exception Logging", true);

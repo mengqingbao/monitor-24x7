@@ -3,6 +3,7 @@ package com.ombillah.monitoring.dao;
 import java.util.List;
 
 import com.ombillah.monitoring.domain.ExceptionLogger;
+import com.ombillah.monitoring.domain.HttpRequestUrl;
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SqlQuery;
@@ -25,4 +26,8 @@ public interface CollectorDAO {
 	public void saveSqlQueries(List<SqlQuery> queries);
 
 	public void saveException(ExceptionLogger logger);
+
+	public List<HttpRequestUrl> retrieveHttpRequestUrls();
+
+	public void saveHttpRequestUrls(List<HttpRequestUrl> requestUrls);
 }

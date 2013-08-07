@@ -1,15 +1,14 @@
 package com.ombillah.monitoring.aspectj;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.sql.Connection;
 
 import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.name.Names;
 import com.ombillah.monitoring.bootstrap.Bootstrap;
+import com.ombillah.monitoring.domain.DbConnectionTracker;
 
 public aspect DatabaseConnectionsAspect {
 
-	private AtomicLong connectionCount;
+	private DbConnectionTracker dbConnectionTracker;
 	
 	public DatabaseConnectionsAspect() {
 		bootstrap();		
@@ -18,8 +17,7 @@ public aspect DatabaseConnectionsAspect {
 	private void bootstrap() {
 		try {
 			Injector injector = Bootstrap.init();
-			connectionCount = injector.getInstance(Key.get(AtomicLong.class, Names.named("ActiveConnectionCount")));
-			
+			dbConnectionTracker = injector.getInstance(DbConnectionTracker.class);
 		} catch (Throwable ex) {
 			ex.printStackTrace();
 		}
@@ -27,13 +25,8 @@ public aspect DatabaseConnectionsAspect {
 	
 	  pointcut openConnection() : execution(public * javax.sql.DataSource.getConnection(..)) ;
 	
-	  after() : openConnection() {
-		  connectionCount.incrementAndGet();
+	  after() returning(Connection connection)  : openConnection() {
+		  dbConnectionTracker.addConnection(connection);
 	  }
-	  
-	  pointcut closeConnection() : execution(public * java.sql.Connection.close()) ;
-		
-	  after() : closeConnection() {
-		  connectionCount.decrementAndGet();
-	  }
+
 }

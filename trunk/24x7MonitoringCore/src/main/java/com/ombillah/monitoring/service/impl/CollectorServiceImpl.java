@@ -6,6 +6,7 @@ import javax.inject.Inject;
 
 import com.ombillah.monitoring.dao.CollectorDAO;
 import com.ombillah.monitoring.domain.ExceptionLogger;
+import com.ombillah.monitoring.domain.HttpRequestUrl;
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SqlQuery;
@@ -45,6 +46,14 @@ public class CollectorServiceImpl implements CollectorService {
 	public void saveException(ExceptionLogger logger) {
 		collectorDao.saveException(logger);
 		
+	}
+
+	public List<HttpRequestUrl> retrieveHttpRequestUrls() {
+		return collectorDao.retrieveHttpRequestUrls();
+	}
+
+	public void saveHttpRequestUrls(List<HttpRequestUrl> requestUrls) {
+		collectorDao.saveHttpRequestUrls(requestUrls);
 	}
 
 }

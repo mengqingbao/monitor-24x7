@@ -6,13 +6,10 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.persistence.EntityManager;
 
-import org.hibernate.ejb.HibernateEntityManagerFactory;
-import org.hibernate.internal.SessionFactoryImpl;
-import org.hibernate.service.jdbc.connections.internal.DatasourceConnectionProviderImpl;
-
 import com.google.inject.persist.Transactional;
 import com.ombillah.monitoring.dao.CollectorDAO;
 import com.ombillah.monitoring.domain.ExceptionLogger;
+import com.ombillah.monitoring.domain.HttpRequestUrl;
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SqlQuery;
@@ -76,6 +73,25 @@ public class CollectorDAOImpl implements CollectorDAO {
 	@Transactional
 	public void saveException(ExceptionLogger logger) {
 		entityManager.get().persist(logger);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Transactional
+	public List<HttpRequestUrl> retrieveHttpRequestUrls() {
+		String sql = "SELECT r FROM HttpRequestUrl r ";
+		List<HttpRequestUrl> list = entityManager.get().createQuery(sql).getResultList();
+		return list;
+	}
+
+	@Transactional
+	public void saveHttpRequestUrls(List<HttpRequestUrl> requestUrls) {
+		for(HttpRequestUrl request : requestUrls) {
+			HttpRequestUrl result = entityManager.get().find(HttpRequestUrl.class, request.getRequestUrl());
+			if(result == null) {
+				entityManager.get().persist(request);
+			}	
+		}
+		
 	}
 
 }

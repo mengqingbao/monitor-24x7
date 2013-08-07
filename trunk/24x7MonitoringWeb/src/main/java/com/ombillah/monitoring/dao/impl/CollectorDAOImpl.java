@@ -29,6 +29,7 @@ import com.ombillah.monitoring.domain.SearchFilter;
  *
  */
 @Repository
+@Transactional(readOnly = true)
 public class CollectorDAOImpl implements CollectorDAO {
 	
 	private JdbcTemplate jdbcTemplate;
@@ -39,7 +40,6 @@ public class CollectorDAOImpl implements CollectorDAO {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 	
-	@Transactional(readOnly = true)
 	public List<MethodSignature> retrieveMethodSignatures() {
 		
 		List<MethodSignature> list = this.jdbcTemplate.query(
@@ -55,7 +55,6 @@ public class CollectorDAOImpl implements CollectorDAO {
 		return list;
 	}
 
-	@Transactional(readOnly = true)
 	public List<MonitoredItemTracer> retrieveItemStatisticsGroupedByMonitoredItem(SearchFilter searchFilter) {
 		List<Object> params = new ArrayList<Object>();
 		int[] types = new int[0];
@@ -114,7 +113,11 @@ public class CollectorDAOImpl implements CollectorDAO {
 				types = ArrayUtils.add(types, Types.VARCHAR);
 				types = ArrayUtils.add(types, Types.VARCHAR);
 			}
-			else {
+			else if(StringUtils.equals(itemName, "HTTP Requests")) {
+				query += "TYPE = ? " ;
+				params.add("HTTP_REQUEST");
+				types = ArrayUtils.add(types, Types.VARCHAR);
+			} else {
 				params.add(itemName + "%");
 				types = ArrayUtils.add(types, Types.VARCHAR);
 				query += "ITEM_NAME LIKE ? " ;
@@ -141,7 +144,6 @@ public class CollectorDAOImpl implements CollectorDAO {
 		return result;
 	}
 
-	@Transactional(readOnly = true)
 	public List<MonitoredItemTracer> retrieveItemStatistics(SearchFilter searchFilter) {
 		
 		List<Object> params = new ArrayList<Object>();
@@ -185,6 +187,11 @@ public class CollectorDAOImpl implements CollectorDAO {
 				params.add("ACTIVE_CONNECTION");
 				types = ArrayUtils.add(types, Types.VARCHAR);
 			}
+			else if(StringUtils.equals(itemName, "Active Sessions")) {
+				query += "TYPE = ? " ;
+				params.add("ACTIVE_SESSION");
+				types = ArrayUtils.add(types, Types.VARCHAR);
+			}
 			else if(StringUtils.equals(itemName, "SQL")) {
 				query += "TYPE = ? " ;
 				params.add("SQL");
@@ -209,6 +216,11 @@ public class CollectorDAOImpl implements CollectorDAO {
 				params.add("SQL");
 				params.add(itemName + "%");
 				types = ArrayUtils.add(types, Types.VARCHAR);
+				types = ArrayUtils.add(types, Types.VARCHAR);
+			}
+			else if(StringUtils.equals(itemName, "HTTP Requests")) {
+				query += "TYPE = ? " ;
+				params.add("HTTP_REQUEST");
 				types = ArrayUtils.add(types, Types.VARCHAR);
 			}
 			else {
@@ -243,14 +255,12 @@ public class CollectorDAOImpl implements CollectorDAO {
 		return result;
 	}
 	
-	@Transactional(readOnly = true)
 	public List<String> retrieveSqlQueries() {
 		String query = "SELECT DISTINCT SQL_QUERY FROM SQL_QUERIES";
 		List<String> list = jdbcTemplate.queryForList(query, String.class);
 		return list;
 	}
 
-	@Transactional(readOnly = true)
 	public List<ExceptionLogger> retrieveExceptionLoggers(SearchFilter searchFilter) {
 		List<Object> params = new ArrayList<Object>();
 		int[] types = new int[0];
@@ -275,6 +285,12 @@ public class CollectorDAOImpl implements CollectorDAO {
 	          }
 		});
 		return result;
+	}
+
+	public List<String> retrieveHttpRequestUrls() {
+		String query = "SELECT DISTINCT REQUEST FROM HTTP_REQUESTS";
+		List<String> list = jdbcTemplate.queryForList(query, String.class);
+		return list;
 	}
 
 

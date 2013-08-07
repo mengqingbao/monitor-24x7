@@ -24,4 +24,6 @@ public interface CollectorService {
 	
 	public List<ExceptionLogger> retrieveExceptionLoggers(SearchFilter searchFilter);
 
+	public List<String> retrieveHttpRequestUrls();
+
 }

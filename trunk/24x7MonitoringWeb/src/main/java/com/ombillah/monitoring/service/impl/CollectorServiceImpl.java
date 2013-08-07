@@ -43,4 +43,8 @@ public class CollectorServiceImpl implements CollectorService {
 		return collectorDao.retrieveExceptionLoggers(searchFilter);
 	}
 
+	public List<String> retrieveHttpRequestUrls() {
+		return collectorDao.retrieveHttpRequestUrls();
+	}
+
 }

@@ -143,9 +143,15 @@ public class ChartingServiceImpl implements ChartingService{
 	            builder.append(tracer.getItemName() + "\n");
 	            builder.append(tracer.getCount() + " invocations \n");
 	            String unit = "ms";
+	            
 	            if(StringUtils.equals("Total Memory", itemName) || StringUtils.equals("Used Memory", itemName)) {
 	            	unit = "MB";
+	            } else if(StringUtils.equals("ActiveConnectionCount", itemName)) {
+	            	unit = "connections";
+	            } else if(StringUtils.equals("HttpSessionCount", itemName)) {
+	            	unit = "sessions";
 	            }
+	         
 	            builder.append("Average: " + tracer.getAverage() + " " + unit +"\n");
 	            builder.append("Max: " + tracer.getMax() +  " " + unit +"\n");
 	            builder.append("Min: " + tracer.getMin() +  " " + unit +"\n");

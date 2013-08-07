@@ -5,6 +5,7 @@
 		<aspect  name="com.ombillah.monitoring.aspectj.ExceptionHandlerAspect"/>
 		<aspect  name="com.ombillah.monitoring.aspectj.DatabaseConnectionsAspect"/>
 		<aspect  name="com.ombillah.monitoring.aspectj.SessionCountTrackingAspect"/>
+		<aspect  name="com.ombillah.monitoring.aspectj.HttpRequestHandlerAspect"/>
 	</aspects>
 
    

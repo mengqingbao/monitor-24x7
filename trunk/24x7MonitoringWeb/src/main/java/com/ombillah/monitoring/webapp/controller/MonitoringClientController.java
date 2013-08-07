@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
@@ -68,12 +67,17 @@ public class MonitoringClientController {
 		Map<String, Object> map = new HashMap<String, Object>();
 		Collection<MonitoredItem> tracedMethods = getTracedMethods();
 		List<String> tracedQueries = getTracedQueries();
-		
+		List<String> tracedRequests = getTracedHttpRequests();
 		map.put("tracedMethods", tracedMethods);
 		map.put("tracedQueries", tracedQueries);
-		
+		map.put("HttpRequestUrls", tracedRequests);
 		return map;
 
+	}
+
+	private List<String> getTracedHttpRequests() {
+		List<String> httpRequestUrls = collectorService.retrieveHttpRequestUrls();
+		return httpRequestUrls;
 	}
 
 	private Collection<MonitoredItem> getTracedMethods() {
@@ -188,6 +192,7 @@ public class MonitoringClientController {
 		ChartProperties properties = new ChartProperties();
 		String yLabel = "Average Response Time (ms)";
 		String title = "Response Time";
+		
 		if(StringUtils.equals(monitoredItem, "Memory")) {
 			yLabel = "Memory Size (MB)";
 			title = "Memory Utilization";
@@ -195,6 +200,10 @@ public class MonitoringClientController {
 		else if(StringUtils.equals(monitoredItem, "Database Connections")) {
 			yLabel = "Active DB Connections";
 			title = "Active Database Connections";
+		}
+		else if(StringUtils.equals(monitoredItem, "Active Sessions")) {
+			yLabel = "Active Sessions";
+			title = "Active Sessions";
 		}
 		properties.setTitle(title);
 		properties.setxAxisLabel("Date");
@@ -212,7 +221,7 @@ public class MonitoringClientController {
 		ChartUtilities.writeImageMap(writer, filename, info, false);
 		String graphURL = "DisplayChart?filename=" + filename;
 
-		writer.println("<img id='test' src=\"" + graphURL + "\" width=" + width + " height=" + height + " border=0 usemap=\"#" +  filename + "\">");
+		writer.println("<img id='chart' src=\"" + graphURL + "\" width=" + width + " height=" + height + " border=0 usemap=\"#" +  filename + "\">");
 		writer.println("</body>");
 		writer.println("</html>");
 		
