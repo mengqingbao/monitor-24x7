@@ -1,6 +1,8 @@
 package com.ombillah.monitoring.domain;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -12,42 +14,43 @@ public class DbConnectionTracker extends BaseDomain {
 
 
 	private static final long serialVersionUID = 1L;
-	private Map<String, Connection> connections = new ConcurrentHashMap<String, Connection>();
-
-	public Map<String, Connection> getConnections() {
-		return connections;
-	}
-
-	public void setConnections(Map<String, Connection> connections) {
-		this.connections = connections;
-	}
+	private Map<Connection, Connection> connections = new ConcurrentHashMap<Connection, Connection>();
+	private List<Integer> connectionCounts = new ArrayList<Integer>();
 	
+	public List<Integer> getConnectionCounts() {
+		return connectionCounts;
+	}
+
 	public void addConnection(Connection connection) {
-		//this.connections.put(connection.get, session);
+		this.connections.put(connection, connection);
 	}
 	
-	public void removeConnection(Connection session) {
-		//this.connections.remove(session.getId());
+	public void addConnectionCount(Integer count) {
+		this.connectionCounts.add(count);
 	}
 	
-	public int getActiveSessionCountAndClearExpiredSessions() {
-		int sessionCount  = 0;
-//		for(HttpSession session : connections.values()) {
-//			try {
-//				if(session.getAttribute("24x7monitored") != null) {
-//					sessionCount++;
-//				}
-//				else {
-//					connections.remove(session);
-//				}
-//			} catch (Exception ex) {
-//				connections.remove(session);
-//			}
-//			
-//		}
-		return sessionCount;
+	public void clearConnectionCountList() {
+		this.connectionCounts.clear();
 	}
 	
+	public int getActiveConnectionCountAndClearClosedSessions() {		
+		int connectionCount  = 0;
+		for(Connection connection : connections.values()) {
+			try {
+				if(!connection.isClosed()) {
+					connectionCount++;
+				}
+				else {
+					connections.remove(connection);
+				}
+			} catch (Exception ex) {
+				connections.remove(connection);
+			}
+			
+		}
+		return connectionCount;
+	}
+	 	
 	@Override
 	public boolean equals(Object object) {
 		if (!(object instanceof DbConnectionTracker)) {

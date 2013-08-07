@@ -1,5 +1,7 @@
 package com.ombillah.monitoring.domain;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -15,21 +17,18 @@ public class SessionTracker extends BaseDomain {
 
 	private static final long serialVersionUID = 1L;
 	private Map<String, HttpSession> sessions = new ConcurrentHashMap<String, HttpSession>();
+	private List<Integer> sessionCounts = new ArrayList<Integer>();
 
-	public Map<String, HttpSession> getSessions() {
-		return sessions;
+	public List<Integer> getSessionCounts() {
+		return sessionCounts;
 	}
 
-	public void setSessions(Map<String, HttpSession> sessions) {
-		this.sessions = sessions;
+	public void addSessionCount(Integer count) {
+		this.sessionCounts.add(count);
 	}
-	
+
 	public void addSession(HttpSession session) {
 		this.sessions.put(session.getId(), session);
-	}
-	
-	public void removeSession(HttpSession session) {
-		this.sessions.remove(session.getId());
 	}
 	
 	public int getActiveSessionCountAndClearExpiredSessions() {
@@ -48,6 +47,10 @@ public class SessionTracker extends BaseDomain {
 			
 		}
 		return sessionCount;
+	}
+
+	public void clearSessionCountsList() {
+		this.sessionCounts.clear();
 	}
 	
 	@Override

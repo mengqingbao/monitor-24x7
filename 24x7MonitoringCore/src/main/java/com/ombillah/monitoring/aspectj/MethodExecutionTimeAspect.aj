@@ -26,7 +26,7 @@ public aspect MethodExecutionTimeAspect {
 
 	private void bootstrap() {
 		Injector injector = Bootstrap.init();
-		collectedData = injector.getInstance(Key.get(CollectedData.class, Names.named("MethodCollector")));
+		collectedData = injector.getInstance(Key.get(CollectedData.class, Names.named("MethodAndHttpRequestCollector")));
 	}
 	
 	pointcut publicOperation() : execution(public * com.ombillah.ecom4j..*(..));

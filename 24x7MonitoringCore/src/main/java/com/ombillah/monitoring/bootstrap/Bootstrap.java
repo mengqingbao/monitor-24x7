@@ -11,7 +11,7 @@ import com.google.inject.persist.jpa.JpaPersistModule;
 import com.ombillah.monitoring.factory.ApplicationConfig;
 import com.ombillah.monitoring.jobs.DatabaseAndSessionStatisticsCollector;
 import com.ombillah.monitoring.jobs.MemoryUsageCollector;
-import com.ombillah.monitoring.jobs.MethodExecutionTimeCollector;
+import com.ombillah.monitoring.jobs.MethodAndHttpRequestExecutionTimeCollector;
 import com.ombillah.monitoring.jobs.SQLQueryExecutionTimeCollector;
 
 /**
@@ -58,7 +58,7 @@ public class Bootstrap {
 
 	private static void setMethodExecutionTimeScheduledJob() {
 		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10);
-		Runnable collectorJob = injector.getInstance(MethodExecutionTimeCollector.class);
+		Runnable collectorJob = injector.getInstance(MethodAndHttpRequestExecutionTimeCollector.class);
 		scheduler.scheduleAtFixedRate(collectorJob, 30, 30, TimeUnit.SECONDS);
 	}
 	
