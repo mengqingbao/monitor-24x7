@@ -2,7 +2,6 @@ package com.ombillah.monitoring.aspectj;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,11 +11,9 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
-import javax.swing.text.Document;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.HTMLEditorKit;
-
 import org.apache.commons.lang.StringUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -54,36 +51,42 @@ public aspect HttpRequestHandlerAspect {
 			return proceed(request, response);
 		}
 		
-		final CopyPrintWriter writer = new CopyPrintWriter(response.getWriter());
 
 		Long start = System.currentTimeMillis();
+		final CopyPrintWriter writer;
+		Object ret;
 		
-		Object ret = proceed(request, new HttpServletResponseWrapper(response) {
-	        @Override public PrintWriter getWriter() {
+		writer = new CopyPrintWriter(response.getWriter());
+		ret = proceed(request, new HttpServletResponseWrapper(response) {
+			@Override 
+			public PrintWriter getWriter() {
 	            return writer;
 	        }
 	    });
 		
+		
 		Long end = System.currentTimeMillis();
 		Long executionTime = (end - start);
-
 		
-		String title = "";
+		String responseType = response.getContentType();		
+		boolean isHtmlResponse = StringUtils.startsWith(responseType, "text/html");
 		
-		try {
-			String html = writer.getCopy();
-			StringReader reader = new StringReader(html);
-			HTMLEditorKit kit = new HTMLEditorKit();
-			HTMLDocument doc = new HTMLDocument();
-			kit.read(reader, doc, 0);
-			title = (String) doc.getProperty(Document.TitleProperty);
-		} catch (Exception e) {
+		if(!isHtmlResponse) {
 			return ret;
 		}
 		
+		String title = "";
+		
+		String html = writer.getCopy();
+		try {
+			Document doc = Jsoup.parse(html);
+			title = doc.title();
+		} catch (Exception ex) {
+			// ignoring parsing exception;
+		}
 		
 		String url = request.getServletPath();
-		String monitoredItemName = url + "|" + title;
+		String monitoredItemName = url.substring(1) + "|" + title;
 		Map<String, List<Long>> tracers = collectedData.getTracer();
     	List<Long> execTimes = tracers.get(monitoredItemName);
     	if(execTimes == null) {

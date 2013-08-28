@@ -16,7 +16,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ombillah.monitoring.dao.CollectorDAO;
+import com.ombillah.monitoring.dao.TroubleshootingDAO;
 import com.ombillah.monitoring.domain.ExceptionLogger;
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MonitoredItemTracer;
@@ -30,7 +30,7 @@ import com.ombillah.monitoring.domain.SearchFilter;
  */
 @Repository
 @Transactional(readOnly = true)
-public class CollectorDAOImpl implements CollectorDAO {
+public class TroubleshootingDAOImpl implements TroubleshootingDAO {
 	
 	private JdbcTemplate jdbcTemplate;
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

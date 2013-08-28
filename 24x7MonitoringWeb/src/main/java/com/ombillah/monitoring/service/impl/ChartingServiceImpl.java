@@ -34,7 +34,7 @@ import com.ombillah.monitoring.domain.ChartProperties;
 import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SearchFilter;
 import com.ombillah.monitoring.service.ChartingService;
-import com.ombillah.monitoring.service.CollectorService;
+import com.ombillah.monitoring.service.TroubleshootingService;
 
 /**
  * Service class to interact with JFreeChart Library.
@@ -44,7 +44,7 @@ import com.ombillah.monitoring.service.CollectorService;
 public class ChartingServiceImpl implements ChartingService{
 	
 	@Autowired
-	private CollectorService collectorService;
+	private TroubleshootingService collectorService;
 	
 	public JFreeChart generateChart(ChartProperties properties, SearchFilter searchFilter) {
 		

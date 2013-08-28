@@ -76,7 +76,7 @@ public aspect MySQLQueriesAspect {
 			e.printStackTrace();
 		}
 	    
-	    if(StringUtils.isEmpty(sqlQuery) || StringUtils.equals(catalog, "24x7monitoring")) {
+	    if(StringUtils.isEmpty(sqlQuery) || StringUtils.equals(catalog, "24x7monitoringWWWWWW")) {
 	    	// don't record empty SQLs or SQLs from Monitoring Aspects.
 	    	return ret;
 	    }
