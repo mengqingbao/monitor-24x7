@@ -1442,7 +1442,13 @@
 		_fn : {
 			set_theme : function (theme_name, theme_url) {
 				if(!theme_name) { return false; }
-				if(!theme_url) { theme_url = window.location.pathname + '/css/jquery.jstree.css'; }
+				var pathArray = window.location.pathname.split( '/' );
+				var newPathname = "";
+				for ( var i = 0; i < pathArray.length - 1; i++ ) {
+				  newPathname += pathArray[i];
+				  newPathname += "/";
+				}
+				if(!theme_url) { theme_url = newPathname + 'css/jquery.jstree.css'; }
 				if($.inArray(theme_url, themes_loaded) == -1) {
 					$.vakata.css.add_sheet({ "url" : theme_url });
 					themes_loaded.push(theme_url);

@@ -5,46 +5,46 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ombillah.monitoring.dao.CollectorDAO;
+import com.ombillah.monitoring.dao.TroubleshootingDAO;
 import com.ombillah.monitoring.domain.ExceptionLogger;
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SearchFilter;
-import com.ombillah.monitoring.service.CollectorService;
+import com.ombillah.monitoring.service.TroubleshootingService;
 
 /**
- * Service class for collecting performance data.
+ * Service class for retrieving performance data.
  * @author Oussama M Billah
  *
  */
 @Service
-public class CollectorServiceImpl implements CollectorService {
+public class TroubleshootingServiceImpl implements TroubleshootingService {
 	
 	@Autowired
-	private CollectorDAO collectorDao;
+	private TroubleshootingDAO troubeshootingDao;
 	
 	public List<MethodSignature> retrieveMethodSignatures() {
-		return collectorDao.retrieveMethodSignatures();
+		return troubeshootingDao.retrieveMethodSignatures();
 	}
 	
 	public List<MonitoredItemTracer> retrieveItemStatistics(SearchFilter searchFilter) {
-		return collectorDao.retrieveItemStatistics(searchFilter);
+		return troubeshootingDao.retrieveItemStatistics(searchFilter);
 	}
 	
 	public List<MonitoredItemTracer> retrieveItemStatisticsGroupedByMonitoredItem(SearchFilter searchFilter) {
-		return collectorDao.retrieveItemStatisticsGroupedByMonitoredItem(searchFilter);
+		return troubeshootingDao.retrieveItemStatisticsGroupedByMonitoredItem(searchFilter);
 	}
 
 	public List<String> retrieveSqlQueries() {
-		return collectorDao.retrieveSqlQueries();
+		return troubeshootingDao.retrieveSqlQueries();
 	}
 
 	public List<ExceptionLogger> retrieveExceptionLoggers(SearchFilter searchFilter) {
-		return collectorDao.retrieveExceptionLoggers(searchFilter);
+		return troubeshootingDao.retrieveExceptionLoggers(searchFilter);
 	}
 
 	public List<String> retrieveHttpRequestUrls() {
-		return collectorDao.retrieveHttpRequestUrls();
+		return troubeshootingDao.retrieveHttpRequestUrls();
 	}
 
 }

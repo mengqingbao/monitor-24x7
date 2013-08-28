@@ -9,6 +9,7 @@ import com.google.inject.Injector;
 import com.google.inject.persist.PersistService;
 import com.google.inject.persist.jpa.JpaPersistModule;
 import com.ombillah.monitoring.factory.ApplicationConfig;
+import com.ombillah.monitoring.jobs.AlertManagerJob;
 import com.ombillah.monitoring.jobs.DatabaseAndSessionStatisticsCollector;
 import com.ombillah.monitoring.jobs.MemoryUsageCollector;
 import com.ombillah.monitoring.jobs.MethodAndHttpRequestExecutionTimeCollector;
@@ -41,6 +42,7 @@ public class Bootstrap {
 		setSQLQueryScheduledJob();
 		setDatabaseMonitorScheduledJob();
 		setMemoryAndCPUScheduledJob();
+		setAlertManagerScheduledJob();
 	}
 
 	private static void setDatabaseMonitorScheduledJob() {
@@ -67,5 +69,13 @@ public class Bootstrap {
 		Runnable collectorJob = injector.getInstance(MemoryUsageCollector.class);
 		scheduler.scheduleAtFixedRate(collectorJob, 1, 1, TimeUnit.SECONDS);
 	}
+	
+	private static void setAlertManagerScheduledJob() {
+		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10);
+		Runnable collectorJob = injector.getInstance(AlertManagerJob.class);
+		scheduler.scheduleAtFixedRate(collectorJob, 1, 1, TimeUnit.MINUTES);
+		
+	}
+
 
 }

@@ -13,12 +13,13 @@ public class MemoryUsageCollector implements Runnable {
 	
 	@Inject
 	private CollectorService collectorService;
+	private static final Long BYTES_IN_MB = 1024L * 1000L;
 	
 	public void run() {
 		
 		try {
-			Long freeMemory = Runtime.getRuntime().freeMemory() / 1024L;
-	        Long totalMemory  = Runtime.getRuntime().totalMemory() / 1024L;
+			Long freeMemory = Runtime.getRuntime().freeMemory() / BYTES_IN_MB;
+	        Long totalMemory  = Runtime.getRuntime().totalMemory() / BYTES_IN_MB;
 	        Long usedMemory = totalMemory - freeMemory;
 	        
 	        MonitoredItemTracer totalMem = new MonitoredItemTracer("Total Memory", 

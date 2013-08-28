@@ -1,4 +1,4 @@
-package com.ombillah.monitoring.service;
+package com.ombillah.monitoring.dao;
 
 import java.util.List;
 
@@ -8,17 +8,17 @@ import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SearchFilter;
 
 /**
- * Service class for collecting performance data.
+ * Data Access Object for retrieving performance data.
  * @author Oussama M Billah
  *
  */
-public interface CollectorService {
-
+public interface TroubleshootingDAO {
+	
 	public List<MethodSignature> retrieveMethodSignatures();
-
-	public List<MonitoredItemTracer> retrieveItemStatistics(SearchFilter searchFilter);
 	
 	public List<MonitoredItemTracer> retrieveItemStatisticsGroupedByMonitoredItem(SearchFilter searchFilter);
+
+	public List<MonitoredItemTracer> retrieveItemStatistics(SearchFilter searchFilter);
 
 	public List<String> retrieveSqlQueries();
 	

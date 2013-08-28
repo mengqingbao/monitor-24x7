@@ -18,7 +18,9 @@
 	
 	<!--  redirect  to view directly, no need for controller. -->
 	<mvc:view-controller path="/" view-name="homePage" />
-	
+	<mvc:view-controller path="home.do" view-name="homePage" />
+	<mvc:view-controller path="alert.do" view-name="alert" />
+		
 	<!-- Handles GET requests for /resources/** by efficiently serving static content 
     in the ${webappRoot}/resources dir --> 
 	<mvc:resources mapping="/resources/**" location="/resources/" />

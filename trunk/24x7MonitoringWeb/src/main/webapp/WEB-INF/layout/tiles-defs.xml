@@ -8,7 +8,7 @@
 	 <!-- Common Layout tile  --> 
 	<definition name="commonLayout" template="/WEB-INF/layout/main_layout.jsp">
 		<put-attribute name="htmlTitle" type="string" value=""/>
-		<put-attribute name="header" value="/WEB-INF/layout/blank.jsp"/>
+		<put-attribute name="header" value="/WEB-INF/layout/header.jsp"/>
 		<put-attribute name="body" value="/WEB-INF/layout/blank.jsp"/>
 		<put-attribute name="footer" value="/WEB-INF/layout/blank.jsp"/>
 	</definition>
@@ -18,7 +18,9 @@
 		 <put-attribute name="body" value="/WEB-INF/jsp/index.jsp"/>
 	</definition>
 	
-	<definition name="test" template="/WEB-INF/jsp/xy_chart.jsp">
+	<definition name="alert" extends="commonLayout">
+		 <put-attribute name="htmlTitle" type="string" value="24x7 Monitoring - Alert Manager"/>
+		 <put-attribute name="body" value="/WEB-INF/jsp/alert.jsp"/>
 	</definition>
 	
 </tiles-definitions>

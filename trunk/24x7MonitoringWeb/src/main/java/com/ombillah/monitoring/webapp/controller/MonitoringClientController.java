@@ -40,7 +40,7 @@ import com.ombillah.monitoring.domain.MonitoredItem;
 import com.ombillah.monitoring.domain.SearchFilter;
 import com.ombillah.monitoring.domain.TracingFilter;
 import com.ombillah.monitoring.service.ChartingService;
-import com.ombillah.monitoring.service.CollectorService;
+import com.ombillah.monitoring.service.TroubleshootingService;
 
 /**
  * Rest Client for Monitoring Information
@@ -55,7 +55,7 @@ public class MonitoringClientController {
 	private static final int ONE_MINUTE = 60;
 	
 	@Autowired
-	private CollectorService collectorService;
+	private TroubleshootingService troubleshootingService;
 
 	@Autowired
 	private ChartingService chartingService;
@@ -76,12 +76,12 @@ public class MonitoringClientController {
 	}
 
 	private List<String> getTracedHttpRequests() {
-		List<String> httpRequestUrls = collectorService.retrieveHttpRequestUrls();
+		List<String> httpRequestUrls = troubleshootingService.retrieveHttpRequestUrls();
 		return httpRequestUrls;
 	}
 
 	private Collection<MonitoredItem> getTracedMethods() {
-		List<MethodSignature> methodSignatures = collectorService
+		List<MethodSignature> methodSignatures = troubleshootingService
 				.retrieveMethodSignatures();
 
 		MonitoredItem root = new MonitoredItem("");
@@ -93,7 +93,7 @@ public class MonitoringClientController {
 	}
 
 	private List<String> getTracedQueries() {
-		List<String> sqlQueries = collectorService.retrieveSqlQueries();
+		List<String> sqlQueries = troubleshootingService.retrieveSqlQueries();
 		return sqlQueries;
 	}
 	
@@ -113,7 +113,7 @@ public class MonitoringClientController {
 				toRange);
 		
 		ItemTracers result = new ItemTracers();
-		List<MonitoredItemTracer> monitoredItemTracersGrouped = collectorService.retrieveItemStatisticsGroupedByMonitoredItem(searchFilter);
+		List<MonitoredItemTracer> monitoredItemTracersGrouped = troubleshootingService.retrieveItemStatisticsGroupedByMonitoredItem(searchFilter);
 		result.setMonitoredItemTracersGrouped(monitoredItemTracersGrouped);
 
 		return result;
@@ -175,7 +175,7 @@ public class MonitoringClientController {
 				timeRangeinMins, new ArrayList<String>(), fromRange,
 				toRange);
 		
-		List<ExceptionLogger> exceptionLogger = collectorService.retrieveExceptionLoggers(searchFilter);
+		List<ExceptionLogger> exceptionLogger = troubleshootingService.retrieveExceptionLoggers(searchFilter);
 		return exceptionLogger;
 	}
 	

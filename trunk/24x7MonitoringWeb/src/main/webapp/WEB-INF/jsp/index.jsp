@@ -1,20 +1,6 @@
 <div class="main_content">
-	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 	<script type="text/javascript">
 		chart = null;
-		
-	 	function drawChart($tracersArray) {
-
-	        var data = google.visualization.arrayToDataTable($tracersArray);
-	
-	        var options = {
-	          title: 'Application Performance'
-	        };
-			if(chart == null) {
-				chart = new google.visualization.LineChart(document.getElementById('statsChart'));
-			}
-			chart.draw(data, options);
-	    }
 	    
 	    function findTracer($itemName, $tracers) {
 	    	var $return = null;
