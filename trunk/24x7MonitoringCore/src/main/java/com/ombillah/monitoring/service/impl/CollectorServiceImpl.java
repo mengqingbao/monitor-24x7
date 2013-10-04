@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import com.ombillah.monitoring.dao.CollectorDAO;
 import com.ombillah.monitoring.domain.ExceptionLogger;
 import com.ombillah.monitoring.domain.HttpRequestUrl;
+import com.ombillah.monitoring.domain.ManagedAlert;
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SqlQuery;
@@ -54,6 +55,15 @@ public class CollectorServiceImpl implements CollectorService {
 
 	public void saveHttpRequestUrls(List<HttpRequestUrl> requestUrls) {
 		collectorDao.saveHttpRequestUrls(requestUrls);
+	}
+
+	public List<ManagedAlert> getEnabledAlerts() {
+		return collectorDao.getEnabledAlerts();
+	}
+
+	public MonitoredItemTracer checkPerformanceDegredation(String monitoredItem, 
+			String itemType, Long timeToAlert, Long threshold) {
+		return collectorDao.checkPerformanceDegredation(monitoredItem, itemType, timeToAlert, threshold);
 	}
 
 }

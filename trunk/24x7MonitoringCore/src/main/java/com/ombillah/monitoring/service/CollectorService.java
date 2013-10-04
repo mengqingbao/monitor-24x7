@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.ombillah.monitoring.domain.ExceptionLogger;
 import com.ombillah.monitoring.domain.HttpRequestUrl;
+import com.ombillah.monitoring.domain.ManagedAlert;
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SqlQuery;
@@ -30,5 +31,10 @@ public interface CollectorService {
 	public List<HttpRequestUrl> retrieveHttpRequestUrls();
 
 	public void saveHttpRequestUrls(List<HttpRequestUrl> requestUrls);
+	
+	public List<ManagedAlert> getEnabledAlerts();
+
+	public MonitoredItemTracer checkPerformanceDegredation(String monitoredItem,
+			String itemType, Long timeToAlert, Long threshold);
 
 }
