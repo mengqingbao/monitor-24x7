@@ -16,8 +16,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.name.Names;
 import com.ombillah.monitoring.bootstrap.Bootstrap;
 import com.ombillah.monitoring.domain.CollectedData;
 
@@ -32,7 +30,7 @@ public aspect HttpRequestHandlerAspect {
 	private void bootstrap() {
 		try {
 			Injector injector = Bootstrap.init();
-			collectedData = injector.getInstance(Key.get(CollectedData.class, Names.named("MethodAndHttpRequestCollector")));
+			collectedData = injector.getInstance(CollectedData.class);
 		} catch (Throwable ex) {
 			ex.printStackTrace();
 		}
@@ -88,12 +86,12 @@ public aspect HttpRequestHandlerAspect {
 		String url = request.getServletPath();
 		String monitoredItemName = url.substring(1) + "|" + title;
 		Map<String, List<Long>> tracers = collectedData.getTracer();
-    	List<Long> execTimes = tracers.get(monitoredItemName);
+    	List<Long> execTimes = tracers.get("HTTP_REQUEST||" + monitoredItemName);
     	if(execTimes == null) {
     		execTimes = Collections.synchronizedList(new ArrayList<Long>());
     	}
     	execTimes.add(executionTime);
-    	tracers.put(monitoredItemName, execTimes);
+    	tracers.put("HTTP_REQUEST||" + monitoredItemName, execTimes);
     	collectedData.setTracer(tracers);
 		
 		return ret;

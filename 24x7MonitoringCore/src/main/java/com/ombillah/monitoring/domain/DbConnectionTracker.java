@@ -15,9 +15,9 @@ public class DbConnectionTracker extends BaseDomain {
 
 	private static final long serialVersionUID = 1L;
 	private Map<Connection, Connection> connections = new ConcurrentHashMap<Connection, Connection>();
-	private List<Integer> connectionCounts = new ArrayList<Integer>();
+	private List<Long> connectionCounts = new ArrayList<Long>();
 	
-	public List<Integer> getConnectionCounts() {
+	public List<Long> getConnectionCounts() {
 		return connectionCounts;
 	}
 
@@ -25,7 +25,7 @@ public class DbConnectionTracker extends BaseDomain {
 		this.connections.put(connection, connection);
 	}
 	
-	public void addConnectionCount(Integer count) {
+	public void addConnectionCount(Long count) {
 		this.connectionCounts.add(count);
 	}
 	
@@ -33,8 +33,8 @@ public class DbConnectionTracker extends BaseDomain {
 		this.connectionCounts.clear();
 	}
 	
-	public int getActiveConnectionCountAndClearClosedSessions() {		
-		int connectionCount  = 0;
+	public Long getActiveConnectionCountAndClearClosedSessions() {		
+		Long connectionCount  = 0L;
 		for(Connection connection : connections.values()) {
 			try {
 				if(!connection.isClosed()) {

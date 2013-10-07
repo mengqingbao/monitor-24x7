@@ -19,39 +19,42 @@ public class AlertManagerJob implements Runnable {
 	private CollectorService collectorService;
 	
 	public void run() {
-		List<ManagedAlert> enabledAlerts = collectorService.getEnabledAlerts();
-		
-		for(ManagedAlert alert : enabledAlerts) {
-			Long threshold = alert.getThreshold();
-			String monitoredItem = alert.getItemName();
-			String itemType = alert.getItemType();
-			Long timeToAlert = alert.getTimeToAlertInMins();
-			String email = alert.getAlertEmail();
-			
-			MonitoredItemTracer slowOperation = collectorService.checkPerformanceDegredation(
-					monitoredItem, itemType, timeToAlert, threshold);
-			
-			if(slowOperation != null) {
-				String subject = "Alert for " + itemType + "Slowness!";
-				String body = "the following item :\n\n %s \n\n is slower than usual \n\n"
-							+ "Current Average: %d \n Current Max value: %d \n Threshold: %d. " +
-							"\n\n Automated Alert Email.";
-				body = String.format(body, 
-						monitoredItem, 
-						slowOperation.getAverage(), 
-						slowOperation.getMax(),
-						threshold);
+		try {
+			List<ManagedAlert> enabledAlerts = collectorService.getEnabledAlerts();
+			for(ManagedAlert alert : enabledAlerts) {
+				Long threshold = alert.getThreshold();
+				String monitoredItem = alert.getItemName();
+				String itemType = alert.getItemType();
+				Long timeToAlert = alert.getTimeToAlertInMins();
+				String email = alert.getAlertEmail();
 				
-				String from = "DoNotReplay@localhost";
-				String to = email;
+				MonitoredItemTracer slowOperation = collectorService.checkPerformanceDegredation(
+						monitoredItem, itemType, timeToAlert, threshold);
 				
-				System.out.println(body);
+				if(slowOperation != null) {
+					String subject = "Alert for " + itemType + "Slowness!";
+					String body = "the following item :\n\n %s \n\n is slower than usual \n\n"
+								+ "Current Average: %f \n Current Max value: %f \n Threshold: %d. " +
+								"\n\n Automated Alert Email.";
+					body = String.format(body, 
+							monitoredItem, 
+							slowOperation.getAverage(), 
+							slowOperation.getMax(),
+							threshold);
+					
+					String from = "DoNotReplay@localhost";
+					String to = email;
+					
+					System.out.println(body);
+					
+				}
+				continue;
 				
-			}
-			continue;
-			
+			} 
+		} catch (Throwable ex) {
+				ex.printStackTrace();
 		}
-
 	}
+		
 
 }

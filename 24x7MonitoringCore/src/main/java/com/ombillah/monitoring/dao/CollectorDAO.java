@@ -20,7 +20,7 @@ public interface CollectorDAO {
 	
 	public void saveMethodSignatures(List<MethodSignature> methodSignatures);
 	
-	public void saveMonitoredItemTracingStatistics(List<MonitoredItemTracer> MonitoredItemTracers);
+	public void saveMonitoredItemTracingStatistics(MonitoredItemTracer tracer);
 
 	public List<SqlQuery> retrieveSqlQueries();
 

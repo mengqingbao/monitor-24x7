@@ -17,13 +17,13 @@ public class SessionTracker extends BaseDomain {
 
 	private static final long serialVersionUID = 1L;
 	private Map<String, HttpSession> sessions = new ConcurrentHashMap<String, HttpSession>();
-	private List<Integer> sessionCounts = new ArrayList<Integer>();
+	private List<Long> sessionCounts = new ArrayList<Long>();
 
-	public List<Integer> getSessionCounts() {
+	public List<Long> getSessionCounts() {
 		return sessionCounts;
 	}
 
-	public void addSessionCount(Integer count) {
+	public void addSessionCount(Long count) {
 		this.sessionCounts.add(count);
 	}
 
@@ -31,8 +31,8 @@ public class SessionTracker extends BaseDomain {
 		this.sessions.put(session.getId(), session);
 	}
 	
-	public int getActiveSessionCountAndClearExpiredSessions() {
-		int sessionCount  = 0;
+	public Long getActiveSessionCountAndClearExpiredSessions() {
+		Long sessionCount  = 0L;
 		for(HttpSession session : sessions.values()) {
 			try {
 				if(session.getAttribute("24x7monitored") != null) {

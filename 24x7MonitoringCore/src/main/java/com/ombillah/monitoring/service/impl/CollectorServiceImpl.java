@@ -32,8 +32,10 @@ public class CollectorServiceImpl implements CollectorService {
 
 	}
 
-	public void saveMonitoredItemTracingStatistics(List<MonitoredItemTracer> MonitoredItemTracers) {
-		collectorDao.saveMonitoredItemTracingStatistics(MonitoredItemTracers);
+	public void saveMonitoredItemTracingStatistics(List<MonitoredItemTracer> monitoredItemTracers) {
+		for(MonitoredItemTracer tracer : monitoredItemTracers) {
+			collectorDao.saveMonitoredItemTracingStatistics(tracer);
+		}
 	}
 
 	public List<SqlQuery> retrieveSqlQueries() {
