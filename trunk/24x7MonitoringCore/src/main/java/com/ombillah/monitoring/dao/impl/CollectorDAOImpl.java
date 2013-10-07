@@ -7,7 +7,8 @@ import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
-import javax.persistence.TypedQuery;
+
+import org.hibernate.ejb.HibernateEntityManagerFactory;
 
 import com.google.inject.persist.Transactional;
 import com.ombillah.monitoring.dao.CollectorDAO;
@@ -47,11 +48,8 @@ public class CollectorDAOImpl implements CollectorDAO {
 		
 	}
 	
-	@Transactional
-	public void saveMonitoredItemTracingStatistics(List<MonitoredItemTracer> monitoredItemTracers) {
-		for(MonitoredItemTracer tracer : monitoredItemTracers) {
-			entityManager.get().persist(tracer);
-		}
+	public void saveMonitoredItemTracingStatistics(MonitoredItemTracer tracer) {
+		entityManager.get().persist(tracer);
 	}
 
 	@Transactional
@@ -135,5 +133,6 @@ public class CollectorDAOImpl implements CollectorDAO {
 		}
 		
 	}
+
 
 }

@@ -11,8 +11,6 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.ombillah.monitoring.bootstrap.Bootstrap;
 import com.ombillah.monitoring.domain.CollectedData;
-import com.google.inject.Key;
-import com.google.inject.name.Names;
 
 public abstract aspect AbstractMethodExecutionTimeAspect {
 	
@@ -25,7 +23,7 @@ public abstract aspect AbstractMethodExecutionTimeAspect {
 
 	private void bootstrap() {
 		Injector injector = Bootstrap.init();
-		collectedData = injector.getInstance(Key.get(CollectedData.class, Names.named("MethodAndHttpRequestCollector")));
+		collectedData = injector.getInstance(CollectedData.class);
 	}
 	
 	protected pointcut methodExecTarget();   
@@ -52,12 +50,12 @@ public abstract aspect AbstractMethodExecutionTimeAspect {
 	    // ignore spring proxies as the original call will also be intercepted.
 	    if(!StringUtils.contains(className, "$Proxy")) {
 	    	Map<String, List<Long>> tracers = collectedData.getTracer();
-	    	List<Long> execTimes = tracers.get(methodName);
+	    	List<Long> execTimes = tracers.get("JAVA||" + methodName);
 	    	if(execTimes == null) {
 	    		execTimes = Collections.synchronizedList(new ArrayList<Long>());
 	    	}
 	    	execTimes.add(executionTime);
-	    	tracers.put(methodName, execTimes);
+	    	tracers.put("JAVA||" + methodName, execTimes);
 	    	collectedData.setTracer(tracers);
 	    }
 

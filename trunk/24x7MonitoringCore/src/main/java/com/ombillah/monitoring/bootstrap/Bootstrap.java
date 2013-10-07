@@ -1,5 +1,7 @@
 package com.ombillah.monitoring.bootstrap;
 
+import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -10,10 +12,8 @@ import com.google.inject.persist.PersistService;
 import com.google.inject.persist.jpa.JpaPersistModule;
 import com.ombillah.monitoring.factory.ApplicationConfig;
 import com.ombillah.monitoring.jobs.AlertManagerJob;
-import com.ombillah.monitoring.jobs.DatabaseAndSessionStatisticsCollector;
-import com.ombillah.monitoring.jobs.MemoryUsageCollector;
-import com.ombillah.monitoring.jobs.MethodAndHttpRequestExecutionTimeCollector;
-import com.ombillah.monitoring.jobs.SQLQueryExecutionTimeCollector;
+import com.ombillah.monitoring.jobs.PerformanceMetricsCollector;
+import com.ombillah.monitoring.jobs.PerformanceMetricsPersisterJob;
 
 /**
  * Bootstrap class for the application initialization
@@ -30,7 +30,16 @@ public class Bootstrap {
 		if(injector != null) {
 			return injector;
 		}
-		injector = Guice.createInjector(new ApplicationConfig(), new JpaPersistModule("24x7monitoring"));
+		
+		JpaPersistModule jpaModule = new JpaPersistModule("24x7monitoring");
+		Properties properties = new Properties();
+		try {
+			properties.load(Bootstrap.class.getClassLoader().getResourceAsStream("appConfig.properties"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		JpaPersistModule module = jpaModule.properties(properties);
+		injector = Guice.createInjector(new ApplicationConfig(), module);
 		PersistService persistService = injector.getInstance(PersistService.class);
 		persistService.start();
 		setScheduledJobs();
@@ -38,36 +47,22 @@ public class Bootstrap {
 	}
 	
 	private static void setScheduledJobs() {
-		setMethodExecutionTimeScheduledJob();
-		setSQLQueryScheduledJob();
-		setDatabaseMonitorScheduledJob();
-		setMemoryAndCPUScheduledJob();
+		setPerformanceMetricsCollectorJob();
+		setPerformanceMetricsPersisterJob();
 		setAlertManagerScheduledJob();
 	}
 
-	private static void setDatabaseMonitorScheduledJob() {
+	private static void setPerformanceMetricsCollectorJob() {
 		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10);
-		Runnable collectorJob = injector.getInstance(DatabaseAndSessionStatisticsCollector.class);
+		Runnable collectorJob = injector.getInstance(PerformanceMetricsCollector.class);
 		scheduler.scheduleAtFixedRate(collectorJob, 1, 1, TimeUnit.SECONDS);
 		
 	}
 
-	private static void setSQLQueryScheduledJob() {
+	private static void setPerformanceMetricsPersisterJob() {
 		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10);
-		Runnable collectorJob = injector.getInstance(SQLQueryExecutionTimeCollector.class);
+		Runnable collectorJob = injector.getInstance(PerformanceMetricsPersisterJob.class);
 		scheduler.scheduleAtFixedRate(collectorJob, 30, 30, TimeUnit.SECONDS);
-	}
-
-	private static void setMethodExecutionTimeScheduledJob() {
-		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10);
-		Runnable collectorJob = injector.getInstance(MethodAndHttpRequestExecutionTimeCollector.class);
-		scheduler.scheduleAtFixedRate(collectorJob, 30, 30, TimeUnit.SECONDS);
-	}
-	
-	private static void setMemoryAndCPUScheduledJob() {
-		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10);
-		Runnable collectorJob = injector.getInstance(MemoryUsageCollector.class);
-		scheduler.scheduleAtFixedRate(collectorJob, 1, 1, TimeUnit.SECONDS);
 	}
 	
 	private static void setAlertManagerScheduledJob() {

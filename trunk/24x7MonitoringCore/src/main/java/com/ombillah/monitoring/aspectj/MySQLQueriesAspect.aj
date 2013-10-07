@@ -15,9 +15,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
-
-import com.google.inject.Key;
-import com.google.inject.name.Names;
 import com.ombillah.monitoring.bootstrap.Bootstrap;
 
 public aspect MySQLQueriesAspect {
@@ -32,7 +29,7 @@ public aspect MySQLQueriesAspect {
 	private void bootstrap() {
 		try {
 			Injector injector = Bootstrap.init();
-			collectedData = injector.getInstance(Key.get(CollectedData.class, Names.named("SQLCollector")));
+			collectedData = injector.getInstance(CollectedData.class);
 
 		} catch (Throwable ex) {
 			ex.printStackTrace();
@@ -76,7 +73,7 @@ public aspect MySQLQueriesAspect {
 			e.printStackTrace();
 		}
 	    
-	    if(StringUtils.isEmpty(sqlQuery) || StringUtils.equals(catalog, "24x7monitoringWWWWWW")) {
+	    if(StringUtils.isEmpty(sqlQuery) || StringUtils.equals(catalog, "24x7monitoring")) {
 	    	// don't record empty SQLs or SQLs from Monitoring Aspects.
 	    	return ret;
 	    }
@@ -86,12 +83,12 @@ public aspect MySQLQueriesAspect {
 	    sqlQuery = commentPattern.matcher(sqlQuery).replaceAll("");
 	    
 		Map<String, List<Long>> tracers = collectedData.getTracer();
-     	List<Long> execTimes = tracers.get(sqlQuery);
+     	List<Long> execTimes = tracers.get("SQL||" + sqlQuery);
      	if(execTimes == null) {
      		execTimes = Collections.synchronizedList(new ArrayList<Long>());
      	}
      	execTimes.add(executionTime);
-     	tracers.put(sqlQuery, execTimes);
+     	tracers.put("SQL||" + sqlQuery, execTimes);
      	collectedData.setTracer(tracers);
 	   
 	    return ret;
