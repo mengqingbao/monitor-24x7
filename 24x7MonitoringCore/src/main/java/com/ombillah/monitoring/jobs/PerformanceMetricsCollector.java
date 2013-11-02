@@ -1,19 +1,17 @@
 package com.ombillah.monitoring.jobs;
 
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 
-import com.google.inject.name.Named;
 import com.ombillah.monitoring.domain.CollectedData;
 import com.ombillah.monitoring.domain.DbConnectionTracker;
-import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SessionTracker;
-import com.ombillah.monitoring.service.CollectorService;
+import com.ombillah.monitoring.domain.SigarCpuLoadMonitor;
 import com.ombillah.monitoring.utils.Constants;
 
 public class PerformanceMetricsCollector implements Runnable {
@@ -25,6 +23,9 @@ public class PerformanceMetricsCollector implements Runnable {
 	private DbConnectionTracker connectionTracker;
 	
 	@Inject
+	private SigarCpuLoadMonitor sigarLoadMonitor;
+	
+	@Inject
 	private CollectedData performanceMetrics;
 	
 	private static final Long BYTES_IN_MB = 1024L * 1000L;
@@ -33,15 +34,28 @@ public class PerformanceMetricsCollector implements Runnable {
 		
 		try {
 			Map<String, List<Long>> tracers = performanceMetrics.getTracer();
+			collectCpuUsage(tracers);
 			collectActiveDBConnections(tracers);
 			collectActiveSessions(tracers);
 			collectMemoryUsage(tracers);
-			
+			collectThreadCount(tracers);
+
 		}
 		catch (Throwable ex) {
 			ex.printStackTrace();
 		}
         
+	}
+
+	private void collectCpuUsage(Map<String, List<Long>> tracers) {
+		sigarLoadMonitor.updateLoadTask();
+		Long cpuUsage = sigarLoadMonitor.getLoad();
+		List<Long> cpuUsages = tracers.get("CPU||" + Constants.CPU_USAGE);
+		if(cpuUsages == null) {
+			cpuUsages = Collections.synchronizedList(new ArrayList<Long>());
+		}
+		cpuUsages.add(cpuUsage);
+		tracers.put("CPU||" + Constants.CPU_USAGE, cpuUsages);
 	}
 
 	private void collectActiveSessions(Map<String, List<Long>> tracers) {
@@ -86,6 +100,18 @@ public class PerformanceMetricsCollector implements Runnable {
 		usedMemoryList.add(usedMemory);
 		tracers.put("MEMORY||" + Constants.USED_MEMORY, usedMemoryList);
 
+		
+	}
+	
+	private void collectThreadCount(Map<String, List<Long>> tracers) {
+		Long threadCount = new Long(ManagementFactory.getThreadMXBean().getThreadCount());
+
+		List<Long> threadCounts = tracers.get("ACTIVE_THREAD||" + Constants.ACTIVE_THREAD);
+		if(threadCounts == null) {
+			threadCounts = Collections.synchronizedList(new ArrayList<Long>());
+		}
+		threadCounts.add(threadCount);
+		tracers.put("ACTIVE_THREAD||" + Constants.ACTIVE_THREAD, threadCounts);
 		
 	}
 }

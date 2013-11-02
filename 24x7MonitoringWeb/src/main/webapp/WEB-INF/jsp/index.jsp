@@ -133,7 +133,9 @@
 				alert("please select a valid range");
 				return false;
 			}
-			if(tracedItem == "Memory" || tracedItem == "Database Connections" || tracedItem == "Active Sessions" ) {
+			if(tracedItem == "Memory" || tracedItem == "Database Connections" 
+					|| tracedItem == "Active Sessions" || tracedItem == "Live Threads"
+					||  tracedItem == "CPU Usage") {
 				// display chart only.
 				$("#scrollbar1").css("display", "none");
 				createChartForm(tracedItem, searchFilter);
@@ -491,11 +493,17 @@
 						var memoryLi = createNodeElement("Memory", true);
 						ul.append(memoryLi);
 						
+						var cpuUsageLi = createNodeElement("CPU Usage", true);
+						ul.append(cpuUsageLi);
+						
 						var dbconnectionLi = createNodeElement("Database Connections", true);
 						ul.append(dbconnectionLi);
 						
-						var dbconnectionLi = createNodeElement("Active Sessions", true);
-						ul.append(dbconnectionLi);
+						var activeSessionLi = createNodeElement("Active Sessions", true);
+						ul.append(activeSessionLi);
+						
+						var activeThreadsLi = createNodeElement("Live Threads", true);
+						ul.append(activeThreadsLi);
 						
 						var errorLi = createNodeElement("Exception Logging", true);
 						ul.append(errorLi);

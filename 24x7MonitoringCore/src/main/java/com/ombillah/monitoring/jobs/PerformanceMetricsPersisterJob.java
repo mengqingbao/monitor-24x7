@@ -87,7 +87,6 @@ public class PerformanceMetricsPersisterJob implements Runnable {
 				
 				collectorService.saveMonitoredItemTracingStatistics(list);
 				
-				System.out.println("inserted " + list.size() + " items into Monitoring table at " + timestamp);
 		    	tracers.clear();
 			}
 		}

@@ -43,6 +43,10 @@ public abstract aspect AbstractMethodExecutionTimeAspect {
 	    }
 	    
 	    Long executionTime = (end-start);
+	    //ignore simple operation (i.e: getters and setters...)
+	    if(executionTime <= 1) {
+	    	return ret;
+	    }
 	    String signature = thisJoinPointStaticPart.getSignature().getName();
 	    String className = thisJoinPointStaticPart.getSignature().getDeclaringTypeName();
 	    String methodName = className + "." + signature + "()";

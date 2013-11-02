@@ -8,8 +8,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 
-import org.hibernate.ejb.HibernateEntityManagerFactory;
-
 import com.google.inject.persist.Transactional;
 import com.ombillah.monitoring.dao.CollectorDAO;
 import com.ombillah.monitoring.domain.ExceptionLogger;
@@ -48,6 +46,7 @@ public class CollectorDAOImpl implements CollectorDAO {
 		
 	}
 	
+	@Transactional
 	public void saveMonitoredItemTracingStatistics(MonitoredItemTracer tracer) {
 		entityManager.get().persist(tracer);
 	}
