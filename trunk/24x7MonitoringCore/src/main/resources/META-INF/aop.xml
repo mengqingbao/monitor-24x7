@@ -1,12 +1,13 @@
 <aspectj>
 	<aspects>
-		<aspect  name="com.ombillah.monitoring.aspectj.MethodExecutionTimeAspect"/>
-		<aspect  name="com.ombillah.monitoring.aspectj.MySQLQueriesAspect"/>
+		<aspect  name="com.ombillah.monitoring.aspectj.SQLQueriesAspect"/>
 		<aspect  name="com.ombillah.monitoring.aspectj.ExceptionHandlerAspect"/>
 		<aspect  name="com.ombillah.monitoring.aspectj.DatabaseConnectionsAspect"/>
 		<aspect  name="com.ombillah.monitoring.aspectj.SessionCountTrackingAspect"/>
 		<aspect  name="com.ombillah.monitoring.aspectj.HttpRequestHandlerAspect"/>
+		<concrete-aspect name="com.ombillah.monitoring.aspectj.MethodExecutionTimeAspect" extends="com.ombillah.monitoring.aspectj.AbstractMethodExecutionTimeAspect">
+			<pointcut name="methodExecTarget" expression="ADD_TO_EXTERNAL_FILE" />
+		</concrete-aspect>
+		
 	</aspects>
-
-   
 </aspectj>

@@ -182,6 +182,11 @@ public class TroubleshootingDAOImpl implements TroubleshootingDAO {
 				params.add("MEMORY");
 				types = ArrayUtils.add(types, Types.VARCHAR);
 			}
+			else if(StringUtils.equals(itemName, "CPU Usage")) {
+				query += "TYPE = ? " ;
+				params.add("CPU");
+				types = ArrayUtils.add(types, Types.VARCHAR);
+			}
 			else if(StringUtils.equals(itemName, "Database Connections")) {
 				query += "TYPE = ? " ;
 				params.add("ACTIVE_CONNECTION");
@@ -195,6 +200,11 @@ public class TroubleshootingDAOImpl implements TroubleshootingDAO {
 			else if(StringUtils.equals(itemName, "SQL")) {
 				query += "TYPE = ? " ;
 				params.add("SQL");
+				types = ArrayUtils.add(types, Types.VARCHAR);
+			}
+			else if(StringUtils.equals(itemName, "Live Threads")) {
+				query += "TYPE = ? " ;
+				params.add("ACTIVE_THREAD");
 				types = ArrayUtils.add(types, Types.VARCHAR);
 			}
 			else if(StringUtils.equals(itemName, "OTHER")) {

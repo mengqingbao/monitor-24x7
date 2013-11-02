@@ -146,9 +146,13 @@ public class ChartingServiceImpl implements ChartingService{
 	            
 	            if(StringUtils.equals("Total Memory", itemName) || StringUtils.equals("Used Memory", itemName)) {
 	            	unit = "MB";
+	            }else if(StringUtils.equals("CPU Usage", itemName)) {
+	            	unit = "%";
+	            }else if(StringUtils.equals("ActiveThreadCount", itemName)) {
+	            	unit = "threads";
 	            } else if(StringUtils.equals("ActiveConnectionCount", itemName)) {
 	            	unit = "connections";
-	            } else if(StringUtils.equals("HttpSessionCount", itemName)) {
+	            } else if(StringUtils.equals("ActiveSessionsCount", itemName)) {
 	            	unit = "sessions";
 	            }
 	         

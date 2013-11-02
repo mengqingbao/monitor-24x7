@@ -17,12 +17,12 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import com.ombillah.monitoring.bootstrap.Bootstrap;
 
-public aspect MySQLQueriesAspect {
+public aspect SQLQueriesAspect {
 	
 	private CollectedData collectedData;
 	private Map<PreparedStatement, String> sqlMap = new HashMap<PreparedStatement, String>();
 	
-	public MySQLQueriesAspect() {
+	public SQLQueriesAspect() {
 		bootstrap();		
 	}
 
@@ -96,6 +96,11 @@ public aspect MySQLQueriesAspect {
 	
 	  pointcut statementPrepare() : execution(public * java.sql.Connection.prepareStatement(..)) ;
 	  
+	  /**
+	   * In case of Prepared Statement store the SQL query in a Map Use it in the around
+	   * advice, as preparedStatements don't pass SQL query as parameter to execute method.
+	   * @param statement
+	   */
 	  after() returning (PreparedStatement statement) : statementPrepare() {
 		  Object[] args = thisJoinPoint.getArgs();
 		  if(args.length > 0) {

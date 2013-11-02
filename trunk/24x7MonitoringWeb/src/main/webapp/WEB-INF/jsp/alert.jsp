@@ -174,11 +174,17 @@
 						var memoryLi = createNodeElement("Memory", true);
 						ul.append(memoryLi);
 						
+						var cpuUsageLi = createNodeElement("CPU Usage", true);
+						ul.append(cpuUsageLi);
+						
 						var dbconnectionLi = createNodeElement("Database Connections", true);
 						ul.append(dbconnectionLi);
 						
-						var dbconnectionLi = createNodeElement("Active Sessions", true);
-						ul.append(dbconnectionLi);
+						var activeSessions = createNodeElement("Active Sessions", true);
+						ul.append(activeSessions);
+						
+						var liveThreads = createNodeElement("Live Threads", true);
+						ul.append(liveThreads);
 						
 						var errorLi = createNodeElement("Exception Logging", true);
 						ul.append(errorLi);
@@ -233,6 +239,11 @@
 						metricUnit = "MB";
 						itemType = "MEMORY";
 					}
+					else if(parentNode == "CPU Usage") {
+						metricType = "CPU Usage";
+						metricUnit = "%";
+						itemType = "CPU";
+					}
 					else if(parentNode == "Database Connections") {
 						metricType = "DB Connections Count";
 						metricUnit = "connections";
@@ -242,6 +253,11 @@
 						metricType = "Sessions Count";
 						metricUnit = "sessions";
 						itemType = "ACTIVE_SESSION";
+					}
+					else if(parentNode == "Live Threads") {
+						metricType = "Live Threads";
+						metricUnit = "threads";
+						itemType = "ACTIVE_THREAD";
 					}
 					else if(parentNode == "Exception Logging") {
 						metricType = "Number of Exceptions";

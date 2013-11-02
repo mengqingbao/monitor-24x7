@@ -197,6 +197,10 @@ public class MonitoringClientController {
 			yLabel = "Memory Size (MB)";
 			title = "Memory Utilization";
 		}
+		else if(StringUtils.equals(monitoredItem, "CPU Usage")) {
+			yLabel = "CPU Usage %";
+			title = "CPU Usage %";
+		}
 		else if(StringUtils.equals(monitoredItem, "Database Connections")) {
 			yLabel = "Active DB Connections";
 			title = "Active Database Connections";
@@ -204,6 +208,10 @@ public class MonitoringClientController {
 		else if(StringUtils.equals(monitoredItem, "Active Sessions")) {
 			yLabel = "Active Sessions";
 			title = "Active Sessions";
+		}
+		else if(StringUtils.equals(monitoredItem, "Live Threads")) {
+			yLabel = "Live Threads";
+			title = "Live Threads";
 		}
 		properties.setTitle(title);
 		properties.setxAxisLabel("Date");

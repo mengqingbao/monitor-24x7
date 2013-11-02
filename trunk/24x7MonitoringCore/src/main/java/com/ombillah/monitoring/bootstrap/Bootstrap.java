@@ -1,5 +1,6 @@
 package com.ombillah.monitoring.bootstrap;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.Executors;
@@ -32,9 +33,10 @@ public class Bootstrap {
 		}
 		
 		JpaPersistModule jpaModule = new JpaPersistModule("24x7monitoring");
+		String configFile = System.getProperty("monitoring.configLocation");
 		Properties properties = new Properties();
 		try {
-			properties.load(Bootstrap.class.getClassLoader().getResourceAsStream("appConfig.properties"));
+			properties.load(new FileInputStream(configFile));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -68,7 +70,7 @@ public class Bootstrap {
 	private static void setAlertManagerScheduledJob() {
 		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10);
 		Runnable collectorJob = injector.getInstance(AlertManagerJob.class);
-		scheduler.scheduleAtFixedRate(collectorJob, 10, 10, TimeUnit.SECONDS);
+		scheduler.scheduleAtFixedRate(collectorJob, 1, 10, TimeUnit.MINUTES);
 		
 	}
 
