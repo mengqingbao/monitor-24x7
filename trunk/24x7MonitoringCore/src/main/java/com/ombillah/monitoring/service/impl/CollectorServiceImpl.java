@@ -68,4 +68,5 @@ public class CollectorServiceImpl implements CollectorService {
 		return collectorDao.checkPerformanceDegredation(monitoredItem, itemType, timeToAlert, threshold);
 	}
 
+
 }

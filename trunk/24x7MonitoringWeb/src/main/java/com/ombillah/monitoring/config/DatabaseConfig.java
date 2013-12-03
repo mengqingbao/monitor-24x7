@@ -5,7 +5,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 @Component
-@PropertySource(value = { "classpath:database.properties" })
+@PropertySource(value = { "classpath:config.properties" })
 public class DatabaseConfig {
 	
 	@Value("${jdbc.driverClassName}")

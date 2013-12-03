@@ -1,37 +1,26 @@
 package com.ombillah.monitoring.domain;
 
-import java.util.Date;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-/**
- * Domain class to represent a method tracer.
- * 
- * @author Oussama M Billah
- * 
- */
-public class MonitoredItemTracer extends BaseDomain {
+public class ReportContent extends BaseDomain {
 
 	private static final long serialVersionUID = 1L;
-
-	private Long id;
+	private String reportTime;
 	private String itemName;
-	private String type;
 	private Double average;
 	private Double max;
 	private Double min;
-	private Long count;
-	private Date creationDate;
+	private Integer count;
 
-	public Long getId() {
-		return id;
+	public String getReportTime() {
+		return reportTime;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setReportTime(String reportTime) {
+		this.reportTime = reportTime;
 	}
 
 	public String getItemName() {
@@ -42,23 +31,11 @@ public class MonitoredItemTracer extends BaseDomain {
 		this.itemName = itemName;
 	}
 
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	public void setAverage(Double average) {
-		this.average = average;
-	}
-
-	public double getAverage() {
+	public Double getAverage() {
 		return average;
 	}
 
-	public void setAverage(double average) {
+	public void setAverage(Double average) {
 		this.average = average;
 	}
 
@@ -78,24 +55,16 @@ public class MonitoredItemTracer extends BaseDomain {
 		this.min = min;
 	}
 
-	public Long getCount() {
+	public Integer getCount() {
 		return count;
 	}
 
-	public void setCount(Long count) {
+	public void setCount(Integer count) {
 		this.count = count;
 	}
 
-	public Date getCreationDate() {
-		return creationDate;
-	}
-
-	public void setCreationDate(Date creationDate) {
-		this.creationDate = creationDate;
-	}
-
 	public boolean equals(Object object) {
-		if (!(object instanceof MonitoredItemTracer)) {
+		if (!(object instanceof ReportContent)) {
 			return false;
 		}
 
@@ -116,5 +85,4 @@ public class MonitoredItemTracer extends BaseDomain {
 	public int hashCode() {
 		return HashCodeBuilder.reflectionHashCode(this);
 	}
-
 }

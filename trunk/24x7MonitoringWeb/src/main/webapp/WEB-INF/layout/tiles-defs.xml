@@ -23,4 +23,9 @@
 		 <put-attribute name="body" value="/WEB-INF/jsp/alert.jsp"/>
 	</definition>
 	
+	<definition name="report" extends="commonLayout">
+		 <put-attribute name="htmlTitle" type="string" value="24x7 Monitoring - Report Scheduler"/>
+		 <put-attribute name="body" value="/WEB-INF/jsp/report.jsp"/>
+	</definition>
+	
 </tiles-definitions>

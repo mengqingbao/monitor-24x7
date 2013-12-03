@@ -7,6 +7,7 @@ import com.ombillah.monitoring.domain.HttpRequestUrl;
 import com.ombillah.monitoring.domain.ManagedAlert;
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MonitoredItemTracer;
+import com.ombillah.monitoring.domain.ReportSchedule;
 import com.ombillah.monitoring.domain.SqlQuery;
 
 /**
@@ -36,4 +37,6 @@ public interface CollectorDAO {
 
 	public MonitoredItemTracer checkPerformanceDegredation(String monitoredItem, String itemType, 
 			Long timeToAlert, Long threshold);
+
+	public List<ReportSchedule> getScheduledReports();
 }

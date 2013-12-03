@@ -20,6 +20,7 @@ public class RepositoryConfig {
 		datasource.setUrl(config.getConnectionURL());
 		datasource.setUsername(config.getUserID());
 		datasource.setPassword(config.getPassword());
+		datasource.setValidationQuery("SELECT 1");
 		return datasource;
 	}
 
