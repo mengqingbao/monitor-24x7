@@ -8,6 +8,6 @@
 		<concrete-aspect name="com.ombillah.monitoring.aspectj.MethodExecutionTimeAspect" extends="com.ombillah.monitoring.aspectj.AbstractMethodExecutionTimeAspect">
 			<pointcut name="methodExecTarget" expression="ADD_TO_EXTERNAL_FILE" />
 		</concrete-aspect>
-		
+		 <weaver options="-nowarn -Xlint:ignore"> </weaver>
 	</aspects>
 </aspectj>

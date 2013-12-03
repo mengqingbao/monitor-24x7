@@ -54,6 +54,7 @@ public class Bootstrap {
 		setAlertManagerScheduledJob();
 	}
 
+
 	private static void setPerformanceMetricsCollectorJob() {
 		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10);
 		Runnable collectorJob = injector.getInstance(PerformanceMetricsCollector.class);
@@ -70,9 +71,8 @@ public class Bootstrap {
 	private static void setAlertManagerScheduledJob() {
 		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10);
 		Runnable collectorJob = injector.getInstance(AlertManagerJob.class);
-		scheduler.scheduleAtFixedRate(collectorJob, 1, 10, TimeUnit.MINUTES);
+		scheduler.scheduleAtFixedRate(collectorJob, 10, 60, TimeUnit.MINUTES);
 		
 	}
-
 
 }

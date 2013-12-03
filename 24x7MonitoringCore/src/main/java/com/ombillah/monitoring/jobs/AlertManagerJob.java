@@ -1,16 +1,17 @@
 package com.ombillah.monitoring.jobs;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
 import javax.inject.Inject;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+
+
+import org.apache.commons.mail.DefaultAuthenticator;
+import org.apache.commons.mail.Email;
+import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.SimpleEmail;
 
 import com.ombillah.monitoring.domain.ManagedAlert;
 import com.ombillah.monitoring.domain.MonitoredItemTracer;
@@ -28,23 +29,9 @@ public class AlertManagerJob implements Runnable {
 	
 	public void run() {
 		try {
+
 			List<ManagedAlert> enabledAlerts = collectorService.getEnabledAlerts();
-			final String username = "obillah@gmail.com";
-			final String password = "barca4ever86";
-	 
-			Properties props = new Properties();
-			props.put("mail.smtp.auth", "true");
-			props.put("mail.smtp.starttls.enable", "true");
-			props.put("mail.smtp.host", "smtp.gmail.com");
-			props.put("mail.smtp.port", "587");
-			
-			Session session = Session.getInstance(props,
-					  new javax.mail.Authenticator() {
-						protected PasswordAuthentication getPasswordAuthentication() {
-							return new PasswordAuthentication(username, password);
-						}
-					  });
-			
+		
 			for(ManagedAlert alert : enabledAlerts) {
 				Long threshold = alert.getThreshold();
 				String monitoredItem = alert.getItemName();
@@ -58,7 +45,7 @@ public class AlertManagerJob implements Runnable {
 				if(slowOperation != null) {
 					String subject = "Alert for " + itemType + " Slowness!";
 					String body = "the following item :\n\n %s \n\n is slower than usual \n\n"
-								+ "Current Average: %f \n Current Max value: %f \n Threshold: %d. " +
+								+ "Current Average: %.2f \n Current Max value: %.2f \n Threshold: %d. " +
 								"\n\n Automated Alert Email.";
 					body = String.format(body, 
 							monitoredItem, 
@@ -68,23 +55,8 @@ public class AlertManagerJob implements Runnable {
 					
 					String from = "DoNotReplay@localhost";
 					String to = email;
-					
-					try {
-						 
-						Message message = new MimeMessage(session);
-						message.setFrom(new InternetAddress("support@24x7monitoring.com"));
-						message.setRecipients(Message.RecipientType.TO,
-							InternetAddress.parse("obillah@gmail.com"));
-						message.setSubject(subject);
-						message.setText(body);
-			 
-						//Transport.send(message);
-			 
-						System.out.println("Alert!");
-			 
-					} catch (MessagingException e) {
-						throw new RuntimeException(e);
-					}
+										
+					//sendFromGMail(from, USER_NAME, PASSWORD, to , subject, body);
 					
 				}
 				
@@ -93,6 +65,31 @@ public class AlertManagerJob implements Runnable {
 				ex.printStackTrace();
 		}
 	}
+
+
+    private static void sendFromGMail(String from, String userName, String pass, String to, String subject, String body) throws EmailException {
+    	String configFile = System.getProperty("monitoring.configLocation");
+		Properties properties = new Properties();
+		try {
+			properties.load(new FileInputStream(configFile));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		String hostName = properties.getProperty("SMTP_HOST");
+		String port = properties.getProperty("SMTP_PORT");
+		String userId = properties.getProperty("SMTP_USERNAME");
+		String password = properties.getProperty("SMTP_USERNAME");
+        Email email = new SimpleEmail();
+        email.setHostName(hostName);
+        email.setSmtpPort(Integer.parseInt(port));
+        email.setAuthenticator(new DefaultAuthenticator(userId, password));
+        email.setSSLOnConnect(true);
+        email.setFrom(from);
+        email.setSubject(subject);
+        email.setMsg(body);
+        email.addTo(to);
+        email.send();
+    }
 		
 
 }

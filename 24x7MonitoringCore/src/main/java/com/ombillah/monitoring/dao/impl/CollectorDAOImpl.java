@@ -15,6 +15,7 @@ import com.ombillah.monitoring.domain.HttpRequestUrl;
 import com.ombillah.monitoring.domain.ManagedAlert;
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MonitoredItemTracer;
+import com.ombillah.monitoring.domain.ReportSchedule;
 import com.ombillah.monitoring.domain.SqlQuery;
 
 
@@ -131,6 +132,11 @@ public class CollectorDAOImpl implements CollectorDAO {
 			return null;
 		}
 		
+	}
+
+	public List<ReportSchedule> getScheduledReports() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 
