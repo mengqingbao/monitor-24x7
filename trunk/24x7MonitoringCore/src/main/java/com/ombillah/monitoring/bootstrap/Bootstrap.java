@@ -12,7 +12,6 @@ import com.google.inject.Injector;
 import com.google.inject.persist.PersistService;
 import com.google.inject.persist.jpa.JpaPersistModule;
 import com.ombillah.monitoring.factory.ApplicationConfig;
-import com.ombillah.monitoring.jobs.AlertManagerJob;
 import com.ombillah.monitoring.jobs.PerformanceMetricsCollector;
 import com.ombillah.monitoring.jobs.PerformanceMetricsPersisterJob;
 
@@ -51,7 +50,6 @@ public class Bootstrap {
 	private static void setScheduledJobs() {
 		setPerformanceMetricsCollectorJob();
 		setPerformanceMetricsPersisterJob();
-		setAlertManagerScheduledJob();
 	}
 
 
@@ -68,11 +66,4 @@ public class Bootstrap {
 		scheduler.scheduleAtFixedRate(collectorJob, 30, 30, TimeUnit.SECONDS);
 	}
 	
-	private static void setAlertManagerScheduledJob() {
-		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10);
-		Runnable collectorJob = injector.getInstance(AlertManagerJob.class);
-		scheduler.scheduleAtFixedRate(collectorJob, 10, 60, TimeUnit.MINUTES);
-		
-	}
-
 }

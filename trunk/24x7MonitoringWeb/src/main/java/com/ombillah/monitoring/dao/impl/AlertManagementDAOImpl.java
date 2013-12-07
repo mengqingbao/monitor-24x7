@@ -72,29 +72,41 @@ public class AlertManagementDAOImpl implements AlertManagementDAO {
 		types = ArrayUtils.add(types, Types.VARCHAR);
 		
 		List<ManagedAlert> result = this.jdbcTemplate.query(query, params.toArray(), types,
-			new RowMapper<ManagedAlert>() {
-
-				public ManagedAlert mapRow(ResultSet rs, int rowNum)
-						throws SQLException {
-					
-					int enabledInt = rs.getInt("ENABLED");
-					boolean enabled = enabledInt == 1 ? true : false;
-					
-					ManagedAlert alert = new ManagedAlert();
-					alert.setItemName(rs.getString("ITEM_NAME"));
-	            	alert.setItemType(rs.getString("ITEM_TYPE"));
-	            	alert.setAlertEmail(rs.getString("ALERT_EMAIL"));
-	            	alert.setEnabled(enabled);
-	            	alert.setThreshold(rs.getLong("THRESHOLD"));
-	            	alert.setTimeToAlertInMins(rs.getLong("TIME_TO_ALERT_IN_MINS"));
-	            	
-	                return alert;
-				}
-		});
+			new AlertRowMapper());
+		
 		if(result.isEmpty()) {
 			return null;
 		}
 		return result.get(0);
 	}
+
+
+	@Transactional
+	public List<ManagedAlert> getEnabledAlerts() {
+		String sql = "SELECT * FROM MANAGED_ALERTS WHERE ENABLED = 1";
+		List<ManagedAlert> result = this.jdbcTemplate.query(sql, new AlertRowMapper());
+		return result;
+	}
+	
+	private class AlertRowMapper implements RowMapper<ManagedAlert> {
+
+		public ManagedAlert mapRow(ResultSet rs, int rowNum)
+				throws SQLException {
+			
+			int enabledInt = rs.getInt("ENABLED");
+			boolean enabled = enabledInt == 1 ? true : false;
+			
+			ManagedAlert alert = new ManagedAlert();
+			alert.setItemName(rs.getString("ITEM_NAME"));
+        	alert.setItemType(rs.getString("ITEM_TYPE"));
+        	alert.setAlertEmail(rs.getString("ALERT_EMAIL"));
+        	alert.setEnabled(enabled);
+        	alert.setThreshold(rs.getLong("THRESHOLD"));
+        	alert.setTimeToAlertInMins(rs.getLong("TIME_TO_ALERT_IN_MINS"));
+        	
+            return alert;
+		}
+}
+
 
 }

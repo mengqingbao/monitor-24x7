@@ -25,5 +25,9 @@ public interface TroubleshootingService {
 	public List<ExceptionLogger> retrieveExceptionLoggers(SearchFilter searchFilter);
 
 	public List<String> retrieveHttpRequestUrls();
+	
+	public MonitoredItemTracer checkPerformanceDegredation(
+			String monitoredItem, String itemType, Long timeToAlert,
+			Long threshold);
 
 }

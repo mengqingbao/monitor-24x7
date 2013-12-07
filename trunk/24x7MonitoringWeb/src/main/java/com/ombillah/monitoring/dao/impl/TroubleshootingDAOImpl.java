@@ -303,5 +303,47 @@ public class TroubleshootingDAOImpl implements TroubleshootingDAO {
 		return list;
 	}
 
+	public MonitoredItemTracer checkPerformanceDegredation(
+			String monitoredItem, String itemType, Long timeToAlert,
+			Long threshold) {
+			
+		String sql = "SELECT ITEM_NAME, ROUND(AVG(AVERAGE), 2) AS AVG, MAX(MAX) AS MAX FROM MONITORED_ITEM_TRACER"
+				+ " WHERE type = ?" 
+				+ " AND ITEM_NAME = ?"
+				+ " AND CREATION_DATE > DATE_SUB(NOW(), INTERVAL ? MINUTE)" 
+				+ " GROUP BY ITEM_NAME"
+				+ " HAVING AVG > ?";
+		
+		List<Object> params = new ArrayList<Object>();
+		int[] types = new int[0];
+					
+		params.add(itemType);
+		params.add(monitoredItem);
+		params.add(timeToAlert);
+		params.add(threshold);
+		
+		types = ArrayUtils.add(types, Types.VARCHAR);
+		types = ArrayUtils.add(types, Types.VARCHAR);
+		types = ArrayUtils.add(types, Types.INTEGER);
+		types = ArrayUtils.add(types, Types.INTEGER);
+		
+		List<MonitoredItemTracer> result = this.jdbcTemplate.query(sql, params.toArray(), types,
+				 new RowMapper<MonitoredItemTracer>() {
+	         public MonitoredItemTracer mapRow(ResultSet rs, int rowNum) throws SQLException {
+	         		MonitoredItemTracer tracer = new MonitoredItemTracer();
+					tracer.setItemName(rs.getString("ITEM_NAME"));
+					tracer.setAverage(rs.getDouble("AVG"));
+					tracer.setMax(rs.getDouble("MAX"));
+					return tracer;
+	         }
+		});
+		
+		if(result.isEmpty()) {
+			return null;
+		}
+		return result.get(0);
+		
+	}
+
 
 }

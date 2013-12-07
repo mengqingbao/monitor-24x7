@@ -1,5 +1,7 @@
 package com.ombillah.monitoring.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,10 @@ public class AlertManagementServiceImpl implements AlertManagementService {
 
 	public ManagedAlert retrieveAlert(String itemName, String itemType) {
 		return alertManagementDao.retrieveAlert(itemName, itemType);
+	}
+
+	public List<ManagedAlert> getEnabledAlerts() {
+		return alertManagementDao.getEnabledAlerts();
 	}
 
 }

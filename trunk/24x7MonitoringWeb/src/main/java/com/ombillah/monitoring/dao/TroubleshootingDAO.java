@@ -26,4 +26,8 @@ public interface TroubleshootingDAO {
 
 	public List<String> retrieveHttpRequestUrls();
 
+	public MonitoredItemTracer checkPerformanceDegredation(
+			String monitoredItem, String itemType, Long timeToAlert,
+			Long threshold);
+
 }

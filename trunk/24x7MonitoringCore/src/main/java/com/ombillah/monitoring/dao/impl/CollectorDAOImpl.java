@@ -5,17 +5,12 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
-
 import com.google.inject.persist.Transactional;
 import com.ombillah.monitoring.dao.CollectorDAO;
 import com.ombillah.monitoring.domain.ExceptionLogger;
 import com.ombillah.monitoring.domain.HttpRequestUrl;
-import com.ombillah.monitoring.domain.ManagedAlert;
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MonitoredItemTracer;
-import com.ombillah.monitoring.domain.ReportSchedule;
 import com.ombillah.monitoring.domain.SqlQuery;
 
 
@@ -92,52 +87,5 @@ public class CollectorDAOImpl implements CollectorDAO {
 		}
 		
 	}
-
-	@Transactional
-	public List<ManagedAlert> getEnabledAlerts() {
-		String sql = "SELECT alert FROM ManagedAlert alert where alert.enabled = 1 ";
-		List<ManagedAlert> list = entityManager.get().createQuery(sql, ManagedAlert.class).getResultList();
-		return list;
-	}
-
-	@Transactional
-	public MonitoredItemTracer checkPerformanceDegredation(
-			String monitoredItem, String itemType, Long timeToAlert,
-			Long threshold) {
-			
-		String sql = "SELECT ITEM_NAME, ROUND(AVG(AVERAGE), 2) AS AVG, MAX(MAX) AS MX FROM MONITORED_ITEM_TRACER"
-				+ " WHERE type = :type" 
-				+ " AND ITEM_NAME = :name"
-				+ " AND CREATION_DATE > DATE_SUB(NOW(), INTERVAL :timeToAlert MINUTE)" 
-				+ " GROUP BY ITEM_NAME"
-				+ " HAVING AVG > :threshold";
-		
-		try {
-			Query query = entityManager.get().createNativeQuery(sql);
-			query.setParameter("type", itemType);
-			query.setParameter("name", monitoredItem);
-			query.setParameter("timeToAlert", timeToAlert);
-			query.setParameter("threshold", threshold);
-			Object result =query.getSingleResult();
-			Object[] resultArray = (Object[]) result;
-			
-			MonitoredItemTracer tracer = new MonitoredItemTracer();
-			tracer.setItemName(resultArray[0].toString());
-			tracer.setAverage(Double.valueOf(resultArray[1].toString()));
-			tracer.setMax(Double.valueOf(resultArray[2].toString()));
-			
-			return tracer;
-		} catch (NoResultException ex) {
-			// ignore exception when no result is returned.
-			return null;
-		}
-		
-	}
-
-	public List<ReportSchedule> getScheduledReports() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 
 }

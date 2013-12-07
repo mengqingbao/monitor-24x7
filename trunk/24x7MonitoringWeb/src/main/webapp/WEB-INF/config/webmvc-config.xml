@@ -2,15 +2,18 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:task="http://www.springframework.org/schema/task" 
 	xsi:schemaLocation="
 			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
 			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
 			http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+			http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.2.xsd
 			http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd">
 
 	<mvc:annotation-driven />
 	<context:annotation-config />
-
+	<task:annotation-driven/>
+	
 	<context:component-scan base-package="com.ombillah.monitoring" />
 	<context:property-placeholder location="classpath:config.properties" />
 
@@ -46,10 +49,10 @@
 	<bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean" />
 
 	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
-		<property name="host" value="smtp.gmail.com" />
-		<property name="port" value="587" />
-		<property name="username" value="USER_NAME" />
-		<property name="password" value="PASSWORD" />
+		<property name="host" value="${SMTP_HOST}" />
+		<property name="port" value="${SMTP_PORT}" />
+		<property name="username" value="${SMTP_USERNAME}" />
+		<property name="password" value="${SMTP_PASSWORD}" />
 
 		<property name="javaMailProperties">
 			<props>
