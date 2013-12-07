@@ -1,6 +1,5 @@
 package com.ombillah.monitoring.service;
 
-import com.ombillah.monitoring.domain.ReportContent;
 import com.ombillah.monitoring.domain.ReportSchedule;
 
 /**

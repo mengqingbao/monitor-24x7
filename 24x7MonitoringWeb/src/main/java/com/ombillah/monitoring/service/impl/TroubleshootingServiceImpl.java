@@ -47,4 +47,12 @@ public class TroubleshootingServiceImpl implements TroubleshootingService {
 		return troubeshootingDao.retrieveHttpRequestUrls();
 	}
 
+	public MonitoredItemTracer checkPerformanceDegredation(
+			String monitoredItem, String itemType, Long timeToAlert, Long threshold) {
+		return troubeshootingDao.checkPerformanceDegredation(monitoredItem, 
+				itemType,
+				timeToAlert,
+				threshold);
+	}
+
 }
