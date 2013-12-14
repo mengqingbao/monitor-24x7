@@ -33,11 +33,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.ombillah.monitoring.domain.ChartProperties;
 import com.ombillah.monitoring.domain.ExceptionLogger;
+import com.ombillah.monitoring.domain.HttpRequestUrl;
 import com.ombillah.monitoring.domain.ItemTracers;
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.MonitoredItem;
 import com.ombillah.monitoring.domain.SearchFilter;
+import com.ombillah.monitoring.domain.SqlQuery;
 import com.ombillah.monitoring.domain.TracingFilter;
 import com.ombillah.monitoring.service.ChartingService;
 import com.ombillah.monitoring.service.TroubleshootingService;
@@ -58,6 +60,7 @@ public class MonitoringClientController {
 	private TroubleshootingService troubleshootingService;
 
 	@Autowired
+
 	private ChartingService chartingService;
 
 	@RequestMapping(value = "/json/getMonitoredItems", method = RequestMethod.GET, produces = "application/json")
@@ -66,8 +69,8 @@ public class MonitoringClientController {
 		
 		Map<String, Object> map = new HashMap<String, Object>();
 		Collection<MonitoredItem> tracedMethods = getTracedMethods();
-		List<String> tracedQueries = getTracedQueries();
-		List<String> tracedRequests = getTracedHttpRequests();
+		List<SqlQuery> tracedQueries = getTracedQueries();
+		List<HttpRequestUrl> tracedRequests = getTracedHttpRequests();
 		map.put("tracedMethods", tracedMethods);
 		map.put("tracedQueries", tracedQueries);
 		map.put("HttpRequestUrls", tracedRequests);
@@ -75,8 +78,8 @@ public class MonitoringClientController {
 
 	}
 
-	private List<String> getTracedHttpRequests() {
-		List<String> httpRequestUrls = troubleshootingService.retrieveHttpRequestUrls();
+	private List<HttpRequestUrl> getTracedHttpRequests() {
+		List<HttpRequestUrl> httpRequestUrls = troubleshootingService.retrieveHttpRequestUrls();
 		return httpRequestUrls;
 	}
 
@@ -92,8 +95,8 @@ public class MonitoringClientController {
 		return monitoredItems;
 	}
 
-	private List<String> getTracedQueries() {
-		List<String> sqlQueries = troubleshootingService.retrieveSqlQueries();
+	private List<SqlQuery> getTracedQueries() {
+		List<SqlQuery> sqlQueries = troubleshootingService.retrieveSqlQueries();
 		return sqlQueries;
 	}
 	

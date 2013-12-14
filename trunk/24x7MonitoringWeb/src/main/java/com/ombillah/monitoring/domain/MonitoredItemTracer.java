@@ -23,9 +23,25 @@ public class MonitoredItemTracer extends BaseDomain {
 	private Double average;
 	private Double max;
 	private Double min;
-	private Long count;
+	private Integer count;
 	private Date creationDate;
+	
+	public MonitoredItemTracer() {
+		// default constructor();
+	}
+	
+	public MonitoredItemTracer(String itemName, String type, Double average, Double max,
+			Double min, Integer count, Date creationDate) {
 
+		this.itemName = itemName;
+		this.type = type;
+		this.average = average;
+		this.max = max;
+		this.min = min;
+		this.count = count;
+		this.creationDate = creationDate;
+	}
+	
 	public Long getId() {
 		return id;
 	}
@@ -70,6 +86,7 @@ public class MonitoredItemTracer extends BaseDomain {
 		this.max = max;
 	}
 
+	
 	public Double getMin() {
 		return min;
 	}
@@ -78,11 +95,11 @@ public class MonitoredItemTracer extends BaseDomain {
 		this.min = min;
 	}
 
-	public Long getCount() {
+	public Integer getCount() {
 		return count;
 	}
 
-	public void setCount(Long count) {
+	public void setCount(Integer count) {
 		this.count = count;
 	}
 

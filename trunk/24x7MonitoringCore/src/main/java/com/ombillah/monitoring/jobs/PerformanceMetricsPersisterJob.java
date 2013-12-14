@@ -1,99 +1,74 @@
 package com.ombillah.monitoring.jobs;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.Charset;
 import javax.inject.Inject;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.math.stat.descriptive.SummaryStatistics;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import com.ombillah.monitoring.domain.CollectedData;
-import com.ombillah.monitoring.domain.HttpRequestUrl;
-import com.ombillah.monitoring.domain.MethodSignature;
-import com.ombillah.monitoring.domain.MonitoredItemTracer;
-import com.ombillah.monitoring.domain.SqlQuery;
-import com.ombillah.monitoring.service.CollectorService;
 
 public class PerformanceMetricsPersisterJob implements Runnable {
 	
 	@Inject
-	private CollectorService collectorService;
-	
-	@Inject
 	private CollectedData performanceMetrics;
+	
+	private String url = "http://localhost:8080/24x7monitoring/rest/";
+	private ObjectMapper  mapper = new ObjectMapper();
 	
 	public void run() {
 		
 		try {
-
-			Map<String, List<Long>> tracers = performanceMetrics.getTracer();
-			List<MonitoredItemTracer> list = new CopyOnWriteArrayList<MonitoredItemTracer>();
-			Set<MethodSignature> methodSignatures = new HashSet<MethodSignature>();
-			Set<HttpRequestUrl> httpRequests = new HashSet<HttpRequestUrl>();
-			Set<SqlQuery> sqlQueries = new HashSet<SqlQuery>();
-
-			Date timestamp = new Date();
-			
-			
-			for(String itemName : tracers.keySet()) {
-
-				SummaryStatistics stats = new SummaryStatistics();
-				List<Long> execTimes = tracers.get(itemName);
-				for(int i = 0; i < execTimes.size(); i++) {
-					Long execTime = execTimes.get(i);
-					stats.addValue(execTime);
-				}
-				
-				double average = stats.getMean();
-				double max = stats.getMax();
-				double min = stats.getMin();
-				double count = execTimes.size();
-				
-				String[] nameTypeArray = itemName.split("\\|\\|");
-				String type = nameTypeArray[0];
-				String monitoredItemName = nameTypeArray[1];
-
-				if(StringUtils.equals(type, "HTTP_REQUEST")) {
-					httpRequests.add(new HttpRequestUrl(monitoredItemName));
-				} 
-				else if(StringUtils.equals(type, "JAVA")) {
-					methodSignatures.add(new MethodSignature(monitoredItemName));
-				}
-				else if(StringUtils.equals(type, "SQL")) {
-					sqlQueries.add(new SqlQuery(monitoredItemName));
-				}
-				
-				MonitoredItemTracer tracer = new MonitoredItemTracer(monitoredItemName, type, average, max, min, count, timestamp);
-				list.add(tracer);
-			}
-			if(tracers != null && !tracers.isEmpty()) {
-				List<SqlQuery> sqlQueriesFromDB = collectorService.retrieveSqlQueries();
-				sqlQueries.addAll(sqlQueriesFromDB);
-				collectorService.saveSqlQueries(new ArrayList<SqlQuery>(sqlQueries));
-				
-				List<MethodSignature> methodSignaturesFromDB = collectorService.retrieveMethodSignatures();
-				methodSignatures.addAll(methodSignaturesFromDB);
-				collectorService.saveMethodSignatures(new ArrayList<MethodSignature>(methodSignatures));
-
-				List<HttpRequestUrl> httpRequestsFromDB = collectorService.retrieveHttpRequestUrls();
-				httpRequests.addAll(httpRequestsFromDB);
-				collectorService.saveHttpRequestUrls(new ArrayList<HttpRequestUrl>(httpRequests));
-				
-				collectorService.saveMonitoredItemTracingStatistics(list);
-				
-		    	tracers.clear();
-			}
+			submitCollectedMetricsToServer(performanceMetrics);
+			performanceMetrics.clearTracer();
+			performanceMetrics.cleaLoggedExceptions();
 		}
 		catch (Throwable ex) {
 			ex.printStackTrace();
 		}
 		
+	}
+	
+	private void submitCollectedMetricsToServer(CollectedData collectedData) throws Exception {
+		String jsonString = mapper.writeValueAsString(collectedData);
+		String postUrl = url + "processCollectedData";
+		doPost(postUrl, jsonString);
+	}
+	
+	private String doPost(String url, String jsonBody) throws IOException {
+		HttpURLConnection con = null; 
+		StringBuffer response = new StringBuffer();
+		try {
+			URL obj = new URL(url);
+			con = (HttpURLConnection) obj.openConnection();
+			con.setRequestMethod("POST");
+			con.setRequestProperty("Content-Type", "application/json");
+			// Send post request
+			con.setDoOutput(true);
+			DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+			wr.write(jsonBody.getBytes(Charset.forName("UTF-8")));
+			wr.flush();
+			wr.close();
+
+			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+			String inputLine;
+	 
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+			in.close();
+		} finally {
+			if(con != null) con.disconnect();
+		}
+		
+ 
+		return response.toString();
+	 
 	}
 
 }

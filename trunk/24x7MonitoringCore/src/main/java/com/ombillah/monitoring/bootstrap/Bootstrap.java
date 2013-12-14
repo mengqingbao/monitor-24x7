@@ -9,8 +9,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.persist.PersistService;
-import com.google.inject.persist.jpa.JpaPersistModule;
 import com.ombillah.monitoring.factory.ApplicationConfig;
 import com.ombillah.monitoring.jobs.PerformanceMetricsCollector;
 import com.ombillah.monitoring.jobs.PerformanceMetricsPersisterJob;
@@ -31,7 +29,6 @@ public class Bootstrap {
 			return injector;
 		}
 		
-		JpaPersistModule jpaModule = new JpaPersistModule("24x7monitoring");
 		String configFile = System.getProperty("monitoring.configLocation");
 		Properties properties = new Properties();
 		try {
@@ -39,10 +36,7 @@ public class Bootstrap {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		JpaPersistModule module = jpaModule.properties(properties);
-		injector = Guice.createInjector(new ApplicationConfig(), module);
-		PersistService persistService = injector.getInstance(PersistService.class);
-		persistService.start();
+		injector = Guice.createInjector(new ApplicationConfig());
 		setScheduledJobs();
 		return injector;
 	}
