@@ -2,12 +2,13 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:util="http://www.springframework.org/schema/util"
-	xmlns:task="http://www.springframework.org/schema/task" 
+	xmlns:task="http://www.springframework.org/schema/task" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
 	xsi:schemaLocation="
 			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
 			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
 			http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
 			http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.2.xsd
+			http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.2.xsd
 			http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd">
 
 	<mvc:annotation-driven />
@@ -61,4 +62,16 @@
 			</props>
 		</property>
 	</bean>
+	
+	<bean class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" id="H2DataSource">
+	    <property name="driverClassName" value="org.h2.Driver" />
+	    <property name="url" value="jdbc:h2:~/24x7monitoring;AUTO_SERVER=TRUE;"/>
+	    <property name="username" value="sa" />
+	    <property name="password" value="" />
+	</bean>
+	
+	<jdbc:initialize-database data-source="H2DataSource" enabled="true">
+		<jdbc:script location="classpath:24x7monitoring.sql" />
+	</jdbc:initialize-database>
+	 
 </beans>

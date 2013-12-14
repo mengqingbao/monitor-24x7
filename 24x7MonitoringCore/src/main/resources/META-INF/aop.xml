@@ -1,12 +1,14 @@
 <aspectj>
 	<aspects>
 		<aspect  name="com.ombillah.monitoring.aspectj.SQLQueriesAspect"/>
-		<aspect  name="com.ombillah.monitoring.aspectj.ExceptionHandlerAspect"/>
 		<aspect  name="com.ombillah.monitoring.aspectj.DatabaseConnectionsAspect"/>
 		<aspect  name="com.ombillah.monitoring.aspectj.SessionCountTrackingAspect"/>
 		<aspect  name="com.ombillah.monitoring.aspectj.HttpRequestHandlerAspect"/>
 		<concrete-aspect name="com.ombillah.monitoring.aspectj.MethodExecutionTimeAspect" extends="com.ombillah.monitoring.aspectj.AbstractMethodExecutionTimeAspect">
 			<pointcut name="methodExecTarget" expression="ADD_TO_EXTERNAL_FILE" />
+		</concrete-aspect>
+		<concrete-aspect name="com.ombillah.monitoring.aspectj.ExceptionHandlerAspect" extends="com.ombillah.monitoring.aspectj.AbstractExceptionHandlerAspect">
+			<pointcut name="ExceptionMonitoringTarget" expression="ADD_TO_EXTERNAL_FILE" />
 		</concrete-aspect>
 		 <weaver options="-nowarn -Xlint:ignore"> </weaver>
 	</aspects>

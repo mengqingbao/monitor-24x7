@@ -14,7 +14,7 @@ public class RepositoryConfig {
 
 	@Bean
 	@Autowired
-	public BasicDataSource getDataSource(DatabaseConfig config) {
+	public BasicDataSource dataSource(DatabaseConfig config) {
 		BasicDataSource datasource = new BasicDataSource();
 		datasource.setDriverClassName(config.getDriverClass());
 		datasource.setUrl(config.getConnectionURL());
@@ -27,7 +27,7 @@ public class RepositoryConfig {
 
 	@Bean
 	@Autowired
-	public DataSourceTransactionManager  getTransactionManager(
+	public DataSourceTransactionManager  transactionManager(
 			BasicDataSource dataSource) {
 		return new DataSourceTransactionManager(dataSource);
 	}

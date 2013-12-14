@@ -2,14 +2,17 @@ package com.ombillah.monitoring.service.impl;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.annotation.Resource;
+
 import org.springframework.stereotype.Service;
 
 import com.ombillah.monitoring.dao.TroubleshootingDAO;
 import com.ombillah.monitoring.domain.ExceptionLogger;
+import com.ombillah.monitoring.domain.HttpRequestUrl;
 import com.ombillah.monitoring.domain.MethodSignature;
 import com.ombillah.monitoring.domain.MonitoredItemTracer;
 import com.ombillah.monitoring.domain.SearchFilter;
+import com.ombillah.monitoring.domain.SqlQuery;
 import com.ombillah.monitoring.service.TroubleshootingService;
 
 /**
@@ -17,12 +20,12 @@ import com.ombillah.monitoring.service.TroubleshootingService;
  * @author Oussama M Billah
  *
  */
-@Service
+@Service("troubleshootingService")
 public class TroubleshootingServiceImpl implements TroubleshootingService {
 	
-	@Autowired
+	@Resource(name="troubleshootingDAO")
 	private TroubleshootingDAO troubeshootingDao;
-	
+
 	public List<MethodSignature> retrieveMethodSignatures() {
 		return troubeshootingDao.retrieveMethodSignatures();
 	}
@@ -35,7 +38,7 @@ public class TroubleshootingServiceImpl implements TroubleshootingService {
 		return troubeshootingDao.retrieveItemStatisticsGroupedByMonitoredItem(searchFilter);
 	}
 
-	public List<String> retrieveSqlQueries() {
+	public List<SqlQuery> retrieveSqlQueries() {
 		return troubeshootingDao.retrieveSqlQueries();
 	}
 
@@ -43,7 +46,7 @@ public class TroubleshootingServiceImpl implements TroubleshootingService {
 		return troubeshootingDao.retrieveExceptionLoggers(searchFilter);
 	}
 
-	public List<String> retrieveHttpRequestUrls() {
+	public List<HttpRequestUrl> retrieveHttpRequestUrls() {
 		return troubeshootingDao.retrieveHttpRequestUrls();
 	}
 
@@ -53,6 +56,28 @@ public class TroubleshootingServiceImpl implements TroubleshootingService {
 				itemType,
 				timeToAlert,
 				threshold);
+	}
+
+	public void saveMethodSignatures(List<MethodSignature> methodSignatures) {
+		troubeshootingDao.saveMethodSignatures(methodSignatures);
+
+	}
+
+	public void saveMonitoredItemTracingStatistics(List<MonitoredItemTracer> monitoredItemTracers) {
+		troubeshootingDao.saveMonitoredItemTracingStatistics(monitoredItemTracers);
+	}
+
+	public void saveSqlQueries(List<SqlQuery> queries) {
+		troubeshootingDao.saveSqlQueries(queries);
+	}
+
+	public void saveExceptions(List<ExceptionLogger> exceptions) {
+		troubeshootingDao.saveExceptions(exceptions);
+		
+	}
+
+	public void saveHttpRequestUrls(List<HttpRequestUrl> requestUrls) {
+		troubeshootingDao.saveHttpRequestUrls(requestUrls);
 	}
 
 }

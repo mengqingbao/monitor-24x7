@@ -408,7 +408,8 @@
 			var $delete = $('<ul>').appendTo($deleteLi);
 			var $other = $('<ul>').appendTo($otherLi);
 	
-			$.each(array, function(index, item) {
+			$.each(array, function(index, arrayItem) {
+				var item = arrayItem.sqlQuery;
 			    var li = $(document.createElement('li'));
 				li.attr("id", item);
 				var $img = $(document.createElement('img'));
@@ -442,7 +443,8 @@
 		}
 		
 		function createHttpRequestTree(ul, array) {
-			$.each(array, function(index, item) {
+			$.each(array, function(index, arrayItem) {
+				var item = arrayItem.requestUrl;
 			    var li = $(document.createElement('li'));
 				li.attr("id", item);
 				var $img = $(document.createElement('img'));

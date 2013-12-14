@@ -7,9 +7,10 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.ArrayUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -29,7 +30,7 @@ public class AlertManagementDAOImpl implements AlertManagementDAO {
 
 	private JdbcTemplate jdbcTemplate;
 
-    @Autowired
+    @Resource(name="H2DataSource")
     public void setDataSource(BasicDataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }

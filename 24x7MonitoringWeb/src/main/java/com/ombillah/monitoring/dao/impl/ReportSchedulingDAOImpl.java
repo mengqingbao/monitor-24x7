@@ -6,10 +6,11 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -41,7 +42,7 @@ public class ReportSchedulingDAOImpl implements ReportSchedulingDAO {
 	private static final int HOURS_IN_WEEK = 189;
 	private static final int HOURS_IN_MONTH = 720;
 	
-    @Autowired
+	@Resource(name="H2DataSource")
     public void setDataSource(BasicDataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
@@ -142,7 +143,7 @@ public class ReportSchedulingDAOImpl implements ReportSchedulingDAO {
 				" ,SUM(COUNT) AS COUNT " + 
 				" FROM MONITORED_ITEM_TRACER" + 
 				" WHERE ITEM_NAME = ? AND  CREATION_DATE > DATE_SUB(NOW(), INTERVAL ? HOUR) " + 
-				" GROUP BY ROUND(UNIX_TIMESTAMP(CREATION_DATE) / ?)" + 
+				" GROUP BY ROUND(DATEDIFF(SECOND, '1970-01-01', CREATION_DATE) / ?)" + 
 				" ORDER BY MONITORED_ITEM_TRACER.CREATION_DATE ASC";
 		
 		List<Object> params = new ArrayList<Object>();

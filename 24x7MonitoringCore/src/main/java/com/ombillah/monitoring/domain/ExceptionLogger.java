@@ -2,12 +2,6 @@ package com.ombillah.monitoring.domain;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -18,22 +12,13 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * @author Oussama M Billah
  * 
  */
-@Entity
-@Table(name="EXCEPTION_LOGGER")
 public class ExceptionLogger extends BaseDomain {
 
 	private static final long serialVersionUID = 1L;
-	@Id
-	@GeneratedValue
 	private Long id;
-	
-	@Column(name="EXCEPTION_MESSAGE")
 	private String exceptionMessage;
-
-	@Column(name="STACKTRACE")
 	private String stacktrace;
-	
-	@Column(name="CREATION_DATE")
+	private Integer count;
 	private Date creationDate;
 
 	public Long getId() {
@@ -58,6 +43,14 @@ public class ExceptionLogger extends BaseDomain {
 
 	public void setStacktrace(String stacktrace) {
 		this.stacktrace = stacktrace;
+	}
+
+	public Integer getCount() {
+		return count;
+	}
+
+	public void setCount(Integer count) {
+		this.count = count;
 	}
 
 	public Date getCreationDate() {
