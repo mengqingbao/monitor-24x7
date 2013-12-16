@@ -13,7 +13,7 @@ import com.ombillah.monitoring.domain.ReportSchedule;
  */
 public interface ReportSchedulingDAO {
 
-	public void saveReport(ReportSchedule report);
+	public boolean saveReport(ReportSchedule report);
 	
 	public ReportSchedule retrieveReport(String itemName, String itemType);
 

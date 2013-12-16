@@ -5,7 +5,7 @@ import java.util.Properties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 public class JDBCProperties extends Properties {
 
 	private static final long serialVersionUID = 1L;
