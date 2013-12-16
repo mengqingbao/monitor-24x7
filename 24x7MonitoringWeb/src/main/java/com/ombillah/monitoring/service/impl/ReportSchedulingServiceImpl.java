@@ -1,6 +1,7 @@
 package com.ombillah.monitoring.service.impl;
 
 import java.util.HashMap;
+
 import java.util.List;
 import java.util.Map;
 
@@ -8,6 +9,7 @@ import javax.annotation.PostConstruct;
 
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.quartz.CronTriggerBean;
@@ -37,6 +39,9 @@ public class ReportSchedulingServiceImpl implements ReportSchedulingService {
 	
 	@Autowired
 	private JavaMailSender mailSender;
+	
+	@Autowired
+	private ObjectFactory<ReportScheduledJob> reportJobFactory;
 
 	/**
 	 * Reschedule the enabled Reports on Server restart.
@@ -49,8 +54,8 @@ public class ReportSchedulingServiceImpl implements ReportSchedulingService {
 		}
 	}
 	
-	public void saveReport(ReportSchedule report) {
-		reportSchedulingDao.saveReport(report);
+	public boolean saveReport(ReportSchedule report) {
+		return reportSchedulingDao.saveReport(report);
 	}
 
 	public ReportSchedule retrieveReport(String itemName, String itemType) {
@@ -58,12 +63,9 @@ public class ReportSchedulingServiceImpl implements ReportSchedulingService {
 	}
 
 	public void scheduleReport(ReportSchedule report) {
-		List<ReportContent> reportsContent = reportSchedulingDao.getReportContent(report);
 		
-		ReportScheduledJob task = new ReportScheduledJob();
+		ReportScheduledJob task = reportJobFactory.getObject();
 		task.setReportSchedule(report);
-		task.setMailSender(mailSender);
-		task.setReports(reportsContent);
 		
 		MethodInvokingJobDetailFactoryBean jobDetail = new MethodInvokingJobDetailFactoryBean();
 		Map<String, String> cronExpressionMap = new HashMap<String, String>();

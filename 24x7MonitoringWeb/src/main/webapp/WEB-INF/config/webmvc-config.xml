@@ -65,7 +65,7 @@
 	
 	<bean class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" id="H2DataSource">
 	    <property name="driverClassName" value="org.h2.Driver" />
-	    <property name="url" value="jdbc:h2:~/24x7monitoring;AUTO_SERVER=TRUE;"/>
+	    <property name="url" value="jdbc:h2:~/24x7monitoring;AUTO_SERVER=TRUE"/>
 	    <property name="username" value="sa" />
 	    <property name="password" value="" />
 	</bean>

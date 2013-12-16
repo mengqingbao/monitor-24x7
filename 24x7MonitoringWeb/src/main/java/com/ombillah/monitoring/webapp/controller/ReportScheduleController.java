@@ -28,8 +28,11 @@ public class ReportScheduleController {
 	public String saveReportSettings(
 			@RequestBody ReportSchedule report){
 		
-		reportSchedulingService.saveReport(report);
+		boolean alreadyExists = reportSchedulingService.saveReport(report);
 		if(report.isEnabled()) {
+			if(alreadyExists) {
+				reportSchedulingService.unscheduleReport(report.getItemName());
+			}
 			reportSchedulingService.scheduleReport(report);
 		} else {
 			reportSchedulingService.unscheduleReport(report.getItemName());

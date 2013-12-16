@@ -49,9 +49,9 @@ public class ReportSchedulingDAOImpl implements ReportSchedulingDAO {
 	
     
 	@Transactional(readOnly = false)
-	public void saveReport(ReportSchedule report) {
+	public boolean saveReport(ReportSchedule report) {
 		int enabled = report.isEnabled() ? 1 : 0; 
-		
+		boolean exists = false;
 		ReportSchedule existingReport = this.retrieveReport(report.getItemName(), report.getItemType());
 		String sql = "";
 		if(existingReport == null) {
@@ -70,10 +70,11 @@ public class ReportSchedulingDAOImpl implements ReportSchedulingDAO {
 			
 			sql = String.format(sql, report.getFrequency(), report.getDayOfMonth(), report.getDayOfWeek(), report.getHour(), 
 					report.getMinute(), report.getReportEmail(), enabled, report.getItemName(), report.getItemType());
+			exists = true;
 		}
 		
 		jdbcTemplate.execute(sql);
-
+		return exists;
 	}
 
 	@Transactional(readOnly = true)
@@ -115,42 +116,42 @@ public class ReportSchedulingDAOImpl implements ReportSchedulingDAO {
 	@Transactional(readOnly = true)
 	public List<ReportContent> getReportContent(ReportSchedule report) {
 		String frequency = report.getFrequency();
-		String dateFormat = "%H %i";
+		String dateFormat = "HH:mm";
 		Integer timeRange = SECONDS_IN_15_MINS;
 		Integer timeInterval = ONE_HOUR;
 		
 		if(StringUtils.equals("daily", frequency)) {
-			dateFormat = "%b %D %H:00";
+			dateFormat = "MMM dd HH:00";
 			timeRange = SECONDS_IN_4_HOURS;
 			timeInterval = HOURS_IN_DAY;
 		}
 		else if(StringUtils.equals("weekly", frequency)) {
-			dateFormat = "%M %D";
+			dateFormat = "MMM dd";
 			timeRange = SECONDS_IN_DAY;
 			timeInterval = HOURS_IN_WEEK;
 		}
 		else if(StringUtils.equals("monthly", frequency)) {
-			dateFormat = "%b %D";
+			dateFormat = "MMM dd";
 			timeRange = SECONDS_IN_WEEK;
 			timeInterval = HOURS_IN_MONTH;
 		}
 		
-		String sql = "SELECT DATE_FORMAT(CREATION_DATE, ?) AS CREATION_DATE " +
+		String sql = "SELECT FORMATDATETIME(CREATION_DATE, ?) AS DATE " +
 				" ,ITEM_NAME" + 
 				" ,ROUND(AVG(AVERAGE), 2) AS AVERAGE " + 
 				" ,MAX(MAX) AS MAX " + 
 				" ,MIN(MIN) AS MIN " + 
 				" ,SUM(COUNT) AS COUNT " + 
 				" FROM MONITORED_ITEM_TRACER" + 
-				" WHERE ITEM_NAME = ? AND  CREATION_DATE > DATE_SUB(NOW(), INTERVAL ? HOUR) " + 
-				" GROUP BY ROUND(DATEDIFF(SECOND, '1970-01-01', CREATION_DATE) / ?)" + 
-				" ORDER BY MONITORED_ITEM_TRACER.CREATION_DATE ASC";
+				" WHERE ITEM_NAME like ? AND  CREATION_DATE > TIMESTAMPADD('HOUR', ?, NOW()) " + 
+				" GROUP BY ROUND(DATEDIFF(SECOND, '1970-01-01', CREATION_DATE) / ?), DATE, ITEM_NAME" + 
+				" ORDER BY DATE DESC";
 		
 		List<Object> params = new ArrayList<Object>();
 		int[] types = new int[0];
 		params .add(dateFormat);
-		params.add(report.getItemName());
-		params .add(timeInterval);
+		params.add(report.getItemName() + "%");
+		params .add(timeInterval * -1);
 		params .add(timeRange);
 		types = ArrayUtils.add(types, Types.VARCHAR);
 		types = ArrayUtils.add(types, Types.VARCHAR);
@@ -164,7 +165,7 @@ public class ReportSchedulingDAOImpl implements ReportSchedulingDAO {
 						throws SQLException {
 					
 					ReportContent report = new ReportContent();
-					report.setReportTime(rs.getString("CREATION_DATE"));
+					report.setReportTime(rs.getString("DATE"));
 					report.setItemName(rs.getString("ITEM_NAME"));
 					report.setAverage(rs.getDouble("AVERAGE"));
 					report.setCount(rs.getInt("COUNT"));
